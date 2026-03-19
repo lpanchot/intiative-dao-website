@@ -1,0 +1,2941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Initiative DAO Framework - Cardano Governance</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+            color: #425466;
+            background: #FFFFFF;
+            line-height: 1.6;
+        }
+
+        /* ============ FIXED GLASSY THEME TOGGLE ============ */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 24px;
+            z-index: 1001;
+            width: 56px;
+            height: 28px;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        .theme-toggle:hover {
+            border-color: rgba(255,255,255,0.35);
+            box-shadow: 0 4px 32px rgba(99, 91, 255, 0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+            transform: scale(1.05);
+        }
+        .theme-toggle-knob {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFFFFF, #E2E8F0);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            line-height: 1;
+        }
+        body.light-mode .theme-toggle-knob {
+            transform: translateX(28px);
+            background: linear-gradient(135deg, #FEF3C7, #FBBF24);
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+        }
+        body.light-mode .theme-toggle {
+            background: rgba(255, 255, 255, 0.6);
+            border-color: rgba(99, 91, 255, 0.2);
+            box-shadow: 0 4px 24px rgba(99, 91, 255, 0.1), inset 0 1px 0 rgba(255,255,255,0.5);
+        }
+        body.light-mode .theme-toggle:hover {
+            border-color: rgba(99, 91, 255, 0.4);
+            box-shadow: 0 4px 32px rgba(99, 91, 255, 0.2), inset 0 1px 0 rgba(255,255,255,0.6);
+        }
+
+        /* ============ LANGUAGE SELECTOR ============ */
+        .lang-selector {
+            position: fixed;
+            top: 20px;
+            right: 90px;
+            z-index: 1001;
+        }
+        .lang-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 14px;
+            height: 28px;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 14px;
+            cursor: pointer;
+            color: #FFFFFF;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.1);
+            letter-spacing: 0.3px;
+        }
+        .lang-btn:hover {
+            border-color: rgba(255,255,255,0.35);
+            box-shadow: 0 4px 32px rgba(99, 91, 255, 0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+            transform: scale(1.03);
+        }
+        .lang-btn .lang-arrow {
+            font-size: 8px;
+            transition: transform 0.3s ease;
+        }
+        .lang-selector.open .lang-arrow {
+            transform: rotate(180deg);
+        }
+        .lang-dropdown {
+            position: absolute;
+            top: 36px;
+            right: 0;
+            min-width: 160px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(-8px) scale(0.95);
+            pointer-events: none;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+        }
+        .lang-selector.open .lang-dropdown {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+        .lang-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 13px;
+            color: rgba(255,255,255,0.85);
+            transition: background 0.15s ease;
+            border: none;
+            background: none;
+            width: 100%;
+            font-family: inherit;
+            text-align: left;
+        }
+        .lang-option:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .lang-option.active {
+            color: #80E9FF;
+        }
+        .lang-option .lang-flag {
+            font-size: 16px;
+            width: 22px;
+            text-align: center;
+        }
+
+        /* Light mode language selector */
+        body.light-mode .lang-btn {
+            background: rgba(255, 255, 255, 0.6);
+            border-color: rgba(99, 91, 255, 0.2);
+            color: #0A2540;
+            box-shadow: 0 4px 24px rgba(99, 91, 255, 0.1), inset 0 1px 0 rgba(255,255,255,0.5);
+        }
+        body.light-mode .lang-btn:hover {
+            border-color: rgba(99, 91, 255, 0.4);
+        }
+        body.light-mode .lang-dropdown {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: rgba(99, 91, 255, 0.15);
+            box-shadow: 0 12px 40px rgba(99, 91, 255, 0.12);
+        }
+        body.light-mode .lang-option {
+            color: #334155;
+        }
+        body.light-mode .lang-option:hover {
+            background: rgba(99, 91, 255, 0.06);
+        }
+        body.light-mode .lang-option.active {
+            color: #635BFF;
+        }
+
+        /* Unified network background canvas */
+        #network-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ============ LIGHT MODE OVERRIDES ============ */
+        body.light-mode {
+            background: #F8FAFF;
+        }
+
+        /* Hero in light mode */
+        body.light-mode #hero {
+            background: transparent;
+        }
+        body.light-mode h1 {
+            background: linear-gradient(135deg, #0A2540, #635BFF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        body.light-mode .subtitle {
+            color: #425466;
+        }
+        body.light-mode .badge {
+            background: rgba(99, 91, 255, 0.1);
+            border-color: rgba(99, 91, 255, 0.3);
+            color: #635BFF;
+            backdrop-filter: blur(10px);
+        }
+        body.light-mode .scroll-text {
+            color: #635BFF;
+        }
+        body.light-mode .scroll-line {
+            background: linear-gradient(180deg, #635BFF, transparent);
+        }
+
+        /* Nav in light mode */
+        body.light-mode nav {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px);
+            border-bottom-color: rgba(0, 0, 0, 0.06);
+        }
+        body.light-mode nav a {
+            color: #64748B;
+        }
+        body.light-mode nav a:hover,
+        body.light-mode nav a.active {
+            color: #0A2540;
+        }
+        body.light-mode nav a::after {
+            background: linear-gradient(90deg, #635BFF, #00D4AA);
+        }
+
+        /* Dark sections become light in light mode */
+        body.light-mode section.dark {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            color: #425466;
+        }
+        body.light-mode .dark h2 {
+            color: #0A2540;
+            background: none;
+            -webkit-background-clip: unset;
+            -webkit-text-fill-color: #0A2540;
+            background-clip: unset;
+        }
+        body.light-mode .dark h3 { color: #0A2540; }
+        body.light-mode .dark p { color: #425466; }
+        body.light-mode .dark .card {
+            background: rgba(255, 255, 255, 0.7);
+            border-color: rgba(99, 91, 255, 0.1);
+            backdrop-filter: blur(12px);
+        }
+        body.light-mode .dark .card:hover {
+            border-color: rgba(99, 91, 255, 0.3);
+            box-shadow: 0 20px 40px rgba(99, 91, 255, 0.08);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        body.light-mode .dark .card h3 { color: #0A2540; }
+        body.light-mode .dark .card p { color: #425466; }
+
+        /* Light sections in light mode */
+        body.light-mode section.light {
+            background: rgba(246, 249, 252, 0.75);
+            backdrop-filter: blur(8px);
+        }
+
+        /* KPI strip */
+        body.light-mode .dark .kpi-value { color: #0A2540; }
+        body.light-mode .pilot-legend-item { color: #64748B; }
+
+        /* Track record in light mode */
+        body.light-mode .track-record {
+            background: rgba(240, 244, 255, 0.85);
+            border-color: rgba(99, 91, 255, 0.2);
+            backdrop-filter: blur(12px);
+        }
+        body.light-mode .track-record h3 { color: #0A2540 !important; }
+        body.light-mode .track-record .stat-label { color: #64748B; }
+        body.light-mode .feature-item {
+            background: rgba(255, 255, 255, 0.7);
+            border-color: rgba(99, 91, 255, 0.15);
+            color: #425466;
+            backdrop-filter: blur(8px);
+        }
+        body.light-mode .feature-item:hover {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(99, 91, 255, 0.3);
+        }
+        body.light-mode .feature-item h4 { color: #0A2540 !important; }
+
+        /* Council in light mode */
+        body.light-mode .council-model {
+            background: rgba(99, 91, 255, 0.04);
+            border-color: rgba(99, 91, 255, 0.15);
+        }
+        body.light-mode .council-title { color: #0A2540; }
+        body.light-mode .council-description p { color: #425466; }
+
+        /* Footer in light mode - HIGH CONTRAST */
+        body.light-mode footer {
+            background: rgba(240, 244, 255, 0.8);
+            border-top-color: rgba(99, 91, 255, 0.1);
+            backdrop-filter: blur(8px);
+        }
+        body.light-mode footer h2 {
+            color: #0A2540;
+            background: linear-gradient(135deg, #0A2540, #1a3a5c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        body.light-mode footer p {
+            color: #334155;
+        }
+
+        /* Smooth transitions for theme switch */
+        body, section, nav, .card, .membership-card, .feature-item, .track-record, .council-model, footer {
+            transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
+        }
+        h1, h2, h3, h4, p, a, .badge, .subtitle, .scroll-text {
+            transition: color 0.5s ease, -webkit-text-fill-color 0.5s ease;
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #635BFF, #00D4AA, #80E9FF);
+            transform-origin: left;
+            transform: scaleX(0);
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 999;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            background: rgba(10, 37, 64, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateY(-120%);
+            transition: transform 0.3s ease-out;
+            opacity: 0;
+        }
+
+        nav.visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        nav a {
+            color: #ADBDCC;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: -0.5px;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #635BFF, #00D4AA);
+            transition: width 0.3s ease;
+        }
+
+        nav a:hover {
+            color: #FFFFFF;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        nav a.active {
+            color: #FFFFFF;
+        }
+
+        nav a.active::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        #hero {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: transparent;
+            overflow: hidden;
+            padding: 80px 40px;
+        }
+
+        /* Hero overlays the fixed network bg */
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 1080px;
+            animation: heroFadeIn 0.8s ease-out;
+        }
+
+        @keyframes heroFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(99, 91, 255, 0.2);
+            border: 1px solid rgba(99, 91, 255, 0.4);
+            border-radius: 24px;
+            color: #80E9FF;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 40px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: clamp(48px, 8vw, 96px);
+            font-weight: 700;
+            line-height: 1.15;
+            letter-spacing: -3px;
+            color: #FFFFFF;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #FFFFFF, #80E9FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 20px;
+            color: #ADBDCC;
+            max-width: 800px;
+            margin: 0 auto 80px;
+            line-height: 1.6;
+            letter-spacing: -0.5px;
+        }
+
+        .scroll-prompt {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+            z-index: 1;
+        }
+
+        .scroll-line {
+            width: 2px;
+            height: 30px;
+            background: linear-gradient(180deg, #00D4AA, transparent);
+            margin: 0 auto 10px;
+        }
+
+        .scroll-text {
+            font-size: 12px;
+            color: #80E9FF;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(10px); }
+        }
+
+        /* Section styling */
+        section {
+            padding: 160px 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        section.light {
+            background: rgba(246, 249, 252, 0.92);
+        }
+
+        section.dark {
+            background: rgba(10, 37, 64, 0.93);
+            color: #ADBDCC;
+        }
+
+        .section-content {
+            max-width: 1080px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            font-size: clamp(36px, 5vw, 64px);
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -2px;
+            margin-bottom: 60px;
+            text-align: center;
+        }
+
+        .dark h2 {
+            color: #FFFFFF;
+            background: linear-gradient(135deg, #FFFFFF, #80E9FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .light h2 {
+            color: #0A2540;
+        }
+
+        h3 {
+            font-size: 24px;
+            font-weight: 700;
+            line-height: 1.3;
+            letter-spacing: -1px;
+            margin-bottom: 16px;
+        }
+
+        .dark h3 {
+            color: #FFFFFF;
+        }
+
+        .light h3 {
+            color: #0A2540;
+        }
+
+        p {
+            line-height: 1.8;
+            letter-spacing: -0.3px;
+            margin-bottom: 16px;
+        }
+
+        .dark p {
+            color: #ADBDCC;
+        }
+
+        .light p {
+            color: #425466;
+        }
+
+        /* Cards */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 60px;
+        }
+
+        .card {
+            padding: 32px;
+            border-radius: 12px;
+            border: 1px solid;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        .card.reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .light .card {
+            background: rgba(255, 255, 255, 0.8);
+            border-color: rgba(99, 91, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .light .card:hover {
+            border-color: rgba(99, 91, 255, 0.3);
+            box-shadow: 0 20px 40px rgba(99, 91, 255, 0.08);
+            transform: translateY(-8px);
+        }
+
+        .dark .card {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(128, 233, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .dark .card:hover {
+            border-color: rgba(128, 233, 255, 0.4);
+            box-shadow: 0 20px 40px rgba(0, 212, 170, 0.1);
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-8px);
+        }
+
+        /* Process flow */
+        .process-flow {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin: 60px 0;
+            align-items: center;
+        }
+
+        .process-step {
+            text-align: center;
+        }
+
+        .process-number {
+            font-size: 48px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #635BFF, #00D4AA);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+        }
+
+        /* KPI strip */
+        .kpi-strip {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            margin: 80px 0;
+            padding: 40px;
+            background: rgba(99, 91, 255, 0.1);
+            border: 1px solid rgba(99, 91, 255, 0.2);
+            border-radius: 12px;
+        }
+
+        .kpi-item {
+            text-align: center;
+        }
+
+        .kpi-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .kpi-label {
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+
+        .light .kpi-value {
+            color: #0A2540;
+        }
+
+        .dark .kpi-value {
+            color: #FFFFFF;
+        }
+
+        /* Governance section */
+        .governance-intro {
+            text-align: center;
+            margin-bottom: 80px;
+            font-size: 20px;
+            line-height: 1.6;
+        }
+
+        .council-model {
+            background: rgba(99, 91, 255, 0.1);
+            border: 1px solid rgba(99, 91, 255, 0.2);
+            border-radius: 12px;
+            padding: 60px 40px;
+            margin-bottom: 80px;
+            text-align: center;
+        }
+
+        .council-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 40px;
+        }
+
+        .council-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .council-seat {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 12px;
+            text-align: center;
+            border: 2px solid;
+            color: #FFFFFF;
+        }
+
+        .council-seat.drep {
+            background: rgba(99, 91, 255, 0.3);
+            border-color: #635BFF;
+        }
+
+        .council-seat.dao {
+            background: rgba(0, 212, 170, 0.3);
+            border-color: #00D4AA;
+        }
+
+        .council-description {
+            margin-top: 40px;
+            line-height: 1.8;
+        }
+
+        /* Membership cards */
+        .membership-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 80px;
+        }
+
+        .membership-card {
+            padding: 40px;
+            border-radius: 12px;
+            border: 1px solid;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .membership-card.reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .light .membership-card {
+            background: rgba(255, 255, 255, 0.8);
+            border-color: rgba(99, 91, 255, 0.1);
+        }
+
+        .light .membership-card:hover {
+            border-color: rgba(99, 91, 255, 0.3);
+            box-shadow: 0 20px 40px rgba(99, 91, 255, 0.08);
+        }
+
+        .membership-card h3 {
+            margin-bottom: 24px;
+        }
+
+        .membership-card ul {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .membership-card li {
+            padding-left: 24px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .membership-card li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #00D4AA;
+            font-weight: 700;
+        }
+
+        /* Principles section */
+        .principles {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-top: 80px;
+        }
+
+        .principle {
+            text-align: center;
+        }
+
+        .principle-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #635BFF, #00D4AA);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        /* Track record section */
+        .track-record {
+            background: rgba(99, 91, 255, 0.05);
+            border: 1px solid rgba(99, 91, 255, 0.2);
+            border-radius: 12px;
+            padding: 60px 40px;
+            margin-bottom: 80px;
+        }
+
+        .track-record-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 42px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #635BFF, #00D4AA);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.7;
+        }
+
+        .track-record-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-item {
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(128, 233, 255, 0.2);
+            border-radius: 8px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .feature-item.reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .dark .feature-item {
+            color: #ADBDCC;
+        }
+
+        .dark .feature-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(128, 233, 255, 0.4);
+        }
+
+        .feature-item h4 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        /* Footer */
+        footer {
+            padding: 100px 40px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 1;
+            background: rgba(10, 37, 64, 0.93);
+        }
+
+        footer h2 {
+            margin-bottom: 40px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 16px 40px;
+            background: linear-gradient(135deg, #635BFF, #00D4AA);
+            color: #FFFFFF;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(99, 91, 255, 0.3);
+        }
+
+        /* Pilot Structure Diagram */
+        .pilot-diagram {
+            width: 100%;
+            max-width: 960px;
+            margin: 0 auto;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .pilot-diagram svg {
+            min-width: 700px;
+            width: 100%;
+            height: auto;
+        }
+        .pilot-legend {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+        .pilot-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #ADBDCC;
+        }
+        .pilot-legend-line {
+            width: 28px;
+            height: 2px;
+        }
+        .pilot-legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+        }
+
+        /* Cycle Graphic */
+        .cycle-container {
+            position: relative;
+            width: 100%;
+            max-width: 560px;
+            margin: 60px auto 80px;
+            aspect-ratio: 1;
+        }
+        .cycle-ring {
+            position: absolute;
+            inset: 0;
+        }
+        .cycle-ring svg {
+            width: 100%;
+            height: 100%;
+        }
+        .cycle-node {
+            position: absolute;
+            width: 180px;
+            text-align: center;
+            transform: translate(-50%, -50%);
+        }
+        .cycle-node-inner {
+            padding: 20px 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(99, 91, 255, 0.2);
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        .cycle-node-inner:hover {
+            border-color: rgba(99, 91, 255, 0.5);
+            box-shadow: 0 12px 32px rgba(99, 91, 255, 0.12);
+            transform: scale(1.04);
+        }
+        .cycle-num {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #635BFF, #00D4AA);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 6px;
+        }
+        .cycle-node h3 {
+            font-size: 15px;
+            margin-bottom: 6px;
+        }
+        .cycle-node p {
+            font-size: 12px;
+            line-height: 1.5;
+            margin-bottom: 0;
+        }
+        .cycle-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .cycle-center-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #635BFF;
+            margin-bottom: 4px;
+        }
+        .cycle-center-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0A2540;
+        }
+        /* Cycle arrow animation */
+        @keyframes dashMove {
+            to { stroke-dashoffset: -30; }
+        }
+        .cycle-arrow-path {
+            animation: dashMove 1.5s linear infinite;
+        }
+
+        /* Mobile cycle fallback */
+        .cycle-mobile {
+            display: none;
+        }
+
+        /* Track record - dark inner panel sitting in a light section */
+        .track-record {
+            background: #0A2540;
+            border: 1px solid rgba(99, 91, 255, 0.3);
+        }
+        .track-record h3 {
+            color: #FFFFFF !important;
+        }
+        .track-record .stat-label {
+            color: #CBD5E1;
+            opacity: 1;
+        }
+        .track-record .feature-item {
+            color: #E2E8F0;
+        }
+        .track-record .feature-item p {
+            color: #CBD5E1;
+        }
+        .track-record .feature-item h4 {
+            color: #FFFFFF !important;
+        }
+
+        /* Responsive - Tablet */
+        @media (max-width: 1024px) {
+            section {
+                padding: 100px 30px;
+            }
+
+            h2 {
+                font-size: clamp(32px, 5vw, 52px);
+                margin-bottom: 40px;
+            }
+
+            .council-model {
+                padding: 40px 24px;
+            }
+
+            .track-record {
+                padding: 40px 24px;
+            }
+
+            .cycle-container {
+                max-width: 480px;
+            }
+            .cycle-node {
+                width: 150px;
+            }
+            .cycle-node-inner {
+                padding: 14px 12px;
+            }
+            .cycle-num {
+                font-size: 26px;
+            }
+            .cycle-node h3 {
+                font-size: 13px;
+            }
+            .cycle-node p {
+                font-size: 11px;
+            }
+        }
+
+        /* Responsive - Phone */
+        @media (max-width: 768px) {
+            nav {
+                padding: 12px 16px;
+                gap: 8px;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                justify-content: flex-start;
+            }
+
+            nav a {
+                font-size: 12px;
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+
+            section {
+                padding: 72px 20px;
+            }
+
+            #hero {
+                padding: 60px 20px;
+            }
+
+            h1 {
+                font-size: clamp(36px, 10vw, 52px);
+                letter-spacing: -2px;
+            }
+
+            h2 {
+                font-size: clamp(28px, 7vw, 40px);
+                letter-spacing: -1.5px;
+                margin-bottom: 32px;
+            }
+
+            h3 {
+                font-size: 20px;
+            }
+
+            .subtitle {
+                font-size: 16px;
+                margin-bottom: 48px;
+            }
+
+            .badge {
+                margin-bottom: 24px;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+                margin-top: 32px;
+            }
+
+            .membership-cards {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .track-record-features {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .track-record-stats {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .kpi-strip {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 24px 20px;
+            }
+
+            .council-visual {
+                gap: 12px;
+            }
+
+            .council-seat {
+                width: 56px;
+                height: 56px;
+                font-size: 9px;
+            }
+
+            .council-model {
+                padding: 32px 16px;
+            }
+
+            .principles {
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+
+            .process-flow {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .card {
+                padding: 24px;
+            }
+
+            .membership-card {
+                padding: 28px;
+            }
+
+            /* Hide circular cycle on mobile, show stacked */
+            .cycle-container {
+                display: none;
+            }
+            .cycle-mobile {
+                display: block;
+            }
+
+            footer {
+                padding: 60px 20px;
+            }
+
+            .stat-value {
+                font-size: 36px;
+            }
+        }
+
+        /* Small phones */
+        @media (max-width: 400px) {
+            .principles {
+                grid-template-columns: 1fr;
+            }
+
+            .council-seat {
+                width: 48px;
+                height: 48px;
+                font-size: 8px;
+            }
+
+            h1 {
+                font-size: 32px;
+                letter-spacing: -1.5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Progress bar -->
+    <div class="progress-bar"></div>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="#framework" data-i18n="nav.framework">Framework</a>
+        <a href="#pilot" data-i18n="nav.pilot">Pilot Structure</a>
+        <a href="#governance" data-i18n="nav.governance">Governance</a>
+        <a href="#drep" data-i18n="nav.drep">dRep DAO</a>
+        <a href="#builder" data-i18n="nav.builder">Builder DAO</a>
+        <a href="#opensource" data-i18n="nav.opensource">OSET DAO</a>
+        <a href="#marketing" data-i18n="nav.marketing">Marketing DAO</a>
+    </nav>
+
+    <!-- Language selector - fixed top right -->
+    <div class="lang-selector" id="langSelector">
+        <button class="lang-btn" id="langBtn">
+            <span class="lang-current-flag">&#127468;&#127463;</span>
+            <span class="lang-current-code">EN</span>
+            <span class="lang-arrow">&#9660;</span>
+        </button>
+        <div class="lang-dropdown">
+            <button class="lang-option active" data-lang="en"><span class="lang-flag">&#127468;&#127463;</span> English</button>
+            <button class="lang-option" data-lang="ja"><span class="lang-flag">&#127471;&#127477;</span> Japanese</button>
+            <button class="lang-option" data-lang="es"><span class="lang-flag">&#127466;&#127480;</span> Spanish</button>
+            <button class="lang-option" data-lang="pt"><span class="lang-flag">&#127463;&#127479;</span> Portuguese</button>
+            <button class="lang-option" data-lang="fr"><span class="lang-flag">&#127467;&#127479;</span> French</button>
+        </div>
+    </div>
+
+    <!-- Fixed theme toggle - always visible top right -->
+    <div class="theme-toggle" id="themeToggle" title="Toggle light/dark mode">
+        <div class="theme-toggle-knob" id="themeKnob">&#9790;</div>
+    </div>
+
+    <!-- Unified animated network background -->
+    <canvas id="network-bg"></canvas>
+
+    <!-- Hero Section -->
+    <section id="hero">
+        <div class="hero-content">
+            <div class="badge" data-i18n="hero.badge">Cardano Governance</div>
+            <h1 data-i18n="hero.title">Rethinking Treasury Allocation</h1>
+            <p class="subtitle" data-i18n="hero.subtitle">Strategy-driven capital allocation through specialized Initiative DAOs, where treasury funds flow to builders, infrastructure, and growth initiatives with transparent KPI accountability.</p>
+            <div class="scroll-prompt">
+                <div class="scroll-line"></div>
+                <div class="scroll-text" data-i18n="hero.scroll">Scroll to explore</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Framework Section -->
+    <section id="framework" class="light">
+        <div class="section-content">
+            <h2 data-i18n="framework.title">The Framework</h2>
+            <p style="text-align: center; font-size: 18px; max-width: 800px; margin: 0 auto 60px;" data-i18n="framework.intro">Initiative DAOs represent strategic capital buckets within Cardano's Treasury, each with specialized expertise and KPI accountability mechanisms.</p>
+
+            <!-- Circular Cycle Graphic (desktop/tablet) -->
+            <div class="cycle-container">
+                <div class="cycle-ring">
+                    <svg viewBox="0 0 560 560" fill="none">
+                        <defs>
+                            <linearGradient id="cycleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#635BFF"/>
+                                <stop offset="50%" stop-color="#00D4AA"/>
+                                <stop offset="100%" stop-color="#80E9FF"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- Circular path with animated dashes -->
+                        <circle cx="280" cy="280" r="200" stroke="url(#cycleGrad)" stroke-width="2.5" fill="none" stroke-dasharray="12 8" class="cycle-arrow-path" opacity="0.5"/>
+                        <!-- Chevron arrows at 3 points along the circle (clockwise) -->
+                        <!-- Right side (1→2): pointing down-right at ~60deg -->
+                        <path d="M 462,340 L 472,355 L 455,352" fill="none" stroke="#635BFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>
+                        <!-- Bottom (2→3): pointing left at ~180deg -->
+                        <path d="M 155,415 L 140,425 L 148,410" fill="none" stroke="#00D4AA" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>
+                        <!-- Left side (3→1): pointing up-right at ~300deg -->
+                        <path d="M 110,215 L 100,200 L 115,203" fill="none" stroke="#80E9FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>
+                    </svg>
+                </div>
+                <!-- Step 1: Top center -->
+                <div class="cycle-node" style="top: 6%; left: 50%;">
+                    <div class="cycle-node-inner">
+                        <div class="cycle-num">01</div>
+                        <h3 data-i18n="framework.step1.title">Treasury Allocates</h3>
+                        <p data-i18n="framework.step1.desc">dReps approve sector-level funding to Initiative DAOs</p>
+                    </div>
+                </div>
+                <!-- Step 2: Bottom right -->
+                <div class="cycle-node" style="top: 76%; left: 82%;">
+                    <div class="cycle-node-inner">
+                        <div class="cycle-num">02</div>
+                        <h3 data-i18n="framework.step2.title">DAOs Deploy Capital</h3>
+                        <p data-i18n="framework.step2.desc">Domain experts fund the highest-impact initiatives</p>
+                    </div>
+                </div>
+                <!-- Step 3: Bottom left -->
+                <div class="cycle-node" style="top: 76%; left: 18%;">
+                    <div class="cycle-node-inner">
+                        <div class="cycle-num">03</div>
+                        <h3 data-i18n="framework.step3.title">KPI Accountability</h3>
+                        <p data-i18n="framework.step3.desc">Measure results, adjust allocations, repeat</p>
+                    </div>
+                </div>
+                <!-- Center label -->
+                <div class="cycle-center">
+                    <div class="cycle-center-label" data-i18n="framework.cycle.label">Continuous</div>
+                    <div class="cycle-center-text" data-i18n="framework.cycle.text">Capital Cycle</div>
+                </div>
+            </div>
+
+            <!-- Mobile fallback: stacked steps with loop arrow -->
+            <div class="cycle-mobile" style="margin: 40px 0 60px;">
+                <div style="display: flex; flex-direction: column; gap: 16px; max-width: 400px; margin: 0 auto;">
+                    <div style="padding: 20px; border-radius: 12px; border: 1px solid rgba(99,91,255,0.2); background: rgba(255,255,255,0.95);">
+                        <div style="font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #635BFF, #00D4AA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">01</div>
+                        <h3 style="font-size: 16px;" data-i18n="framework.step1.title">Treasury Allocates</h3>
+                        <p style="font-size: 13px; margin-bottom: 0;" data-i18n="framework.step1.desc">dReps approve sector-level funding to Initiative DAOs</p>
+                    </div>
+                    <div style="text-align: center; font-size: 20px; color: #635BFF;">&#8595;</div>
+                    <div style="padding: 20px; border-radius: 12px; border: 1px solid rgba(0,212,170,0.2); background: rgba(255,255,255,0.95);">
+                        <div style="font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #635BFF, #00D4AA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">02</div>
+                        <h3 style="font-size: 16px;" data-i18n="framework.step2.title">DAOs Deploy Capital</h3>
+                        <p style="font-size: 13px; margin-bottom: 0;" data-i18n="framework.step2.desc">Domain experts fund the highest-impact initiatives</p>
+                    </div>
+                    <div style="text-align: center; font-size: 20px; color: #00D4AA;">&#8595;</div>
+                    <div style="padding: 20px; border-radius: 12px; border: 1px solid rgba(128,233,255,0.2); background: rgba(255,255,255,0.95);">
+                        <div style="font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #635BFF, #00D4AA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">03</div>
+                        <h3 style="font-size: 16px;" data-i18n="framework.step3.title">KPI Accountability</h3>
+                        <p style="font-size: 13px; margin-bottom: 0;" data-i18n="framework.step3.desc">Measure results, adjust allocations, repeat</p>
+                    </div>
+                    <div style="text-align: center; font-size: 14px; color: #80E9FF; font-weight: 600; padding: 12px; border-radius: 8px; background: rgba(99,91,255,0.08); border: 1px dashed rgba(99,91,255,0.2);" data-i18n="framework.cycle.repeat">&#8634; Cycle repeats &mdash; capital compounds</div>
+                </div>
+            </div>
+
+            <div class="kpi-strip">
+                <div class="kpi-item">
+                    <div class="kpi-value" data-i18n="kpi.mau">MAU</div>
+                    <div class="kpi-label" data-i18n="kpi.mau.label">Monthly Active Users</div>
+                </div>
+                <div class="kpi-item">
+                    <div class="kpi-value" data-i18n="kpi.tvl">TVL</div>
+                    <div class="kpi-label" data-i18n="kpi.tvl.label">Total Value Locked</div>
+                </div>
+                <div class="kpi-item">
+                    <div class="kpi-value" data-i18n="kpi.txn">Transactions</div>
+                    <div class="kpi-label" data-i18n="kpi.txn.label">On-Chain Activity</div>
+                </div>
+            </div>
+
+            <div class="cards-grid">
+                <div class="card">
+                    <h3 data-i18n="framework.card1.title">Governance Flow</h3>
+                    <p data-i18n="framework.card1.desc">Treasury allocation flows through Intersect to specialized DAOs, each governed by elected representatives and subject to dRep DAO oversight.</p>
+                </div>
+                <div class="card">
+                    <h3 data-i18n="framework.card2.title">Domain Expertise</h3>
+                    <p data-i18n="framework.card2.desc">Each Initiative DAO focuses on a specific domain: builder funding, open-source tooling, or ecosystem marketing.</p>
+                </div>
+                <div class="card">
+                    <h3 data-i18n="framework.card3.title">On-Chain Accountability</h3>
+                    <p data-i18n="framework.card3.desc">Smart contracts enforce governance decisions and ensure transparency in all treasury movements and KPI reporting.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pilot Structure Section -->
+    <section id="pilot" class="dark">
+        <div class="section-content">
+            <h2 data-i18n="pilot.title">The 2026 Pilot Structure</h2>
+            <p style="text-align: center; font-size: 18px; max-width: 800px; margin: 0 auto 60px;" data-i18n="pilot.intro">Three Initiative DAOs, one governance layer, and a clear accountability chain from treasury to ecosystem impact.</p>
+
+            <div class="pilot-diagram">
+                <svg viewBox="0 0 960 540" fill="none" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+                    <defs>
+                        <linearGradient id="pg-treasury" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#0A2540"/>
+                            <stop offset="100%" stop-color="#1a3a5c"/>
+                        </linearGradient>
+                        <linearGradient id="pg-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#635BFF"/>
+                            <stop offset="100%" stop-color="#7A73FF"/>
+                        </linearGradient>
+                        <linearGradient id="pg-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#2563EB"/>
+                            <stop offset="100%" stop-color="#3B82F6"/>
+                        </linearGradient>
+                        <linearGradient id="pg-green" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#059669"/>
+                            <stop offset="100%" stop-color="#10B981"/>
+                        </linearGradient>
+                        <linearGradient id="pg-red" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#DC2626"/>
+                            <stop offset="100%" stop-color="#EF4444"/>
+                        </linearGradient>
+                        <marker id="pg-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                            <polygon points="0 0, 8 3, 0 6" fill="#4A5568"/>
+                        </marker>
+                        <marker id="pg-arrow-purple" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                            <polygon points="0 0, 8 3, 0 6" fill="#7A73FF"/>
+                        </marker>
+                    </defs>
+
+                    <!-- Cardano Treasury -->
+                    <rect x="355" y="16" width="250" height="64" rx="12" fill="url(#pg-treasury)" stroke="#4A5568" stroke-width="1"/>
+                    <text x="480" y="42" text-anchor="middle" font-size="10" fill="#80E9FF" font-weight="600" letter-spacing="1.5">CARDANO</text>
+                    <text x="480" y="60" text-anchor="middle" font-size="16" font-weight="700" fill="#FFFFFF">Treasury</text>
+
+                    <!-- Arrow: Treasury → Intersect -->
+                    <line x1="480" y1="80" x2="480" y2="112" stroke="#4A5568" stroke-width="2" marker-end="url(#pg-arrow)"/>
+                    <text x="510" y="100" font-size="9" fill="#64748B" font-style="italic">funds allocated</text>
+
+                    <!-- Intersect -->
+                    <rect x="365" y="116" width="230" height="48" rx="10" fill="rgba(255,255,255,0.06)" stroke="#4A5568" stroke-width="1"/>
+                    <text x="480" y="136" text-anchor="middle" font-size="10" fill="#80E9FF" font-weight="600" letter-spacing="1">INTERSECT</text>
+                    <text x="480" y="152" text-anchor="middle" font-size="11" fill="#ADBDCC">Milestone Verification</text>
+
+                    <!-- Arrow: Intersect → split -->
+                    <line x1="480" y1="164" x2="480" y2="196" stroke="#4A5568" stroke-width="2" marker-end="url(#pg-arrow)"/>
+                    <text x="510" y="184" font-size="9" fill="#64748B" font-style="italic">funds released</text>
+
+                    <!-- Split lines to 3 DAOs -->
+                    <path d="M 480 200 L 480 204 L 160 204 L 160 220" stroke="#4A5568" stroke-width="1.5" fill="none" marker-end="url(#pg-arrow)"/>
+                    <path d="M 480 200 L 480 204 L 480 220" stroke="#4A5568" stroke-width="1.5" fill="none" marker-end="url(#pg-arrow)"/>
+                    <path d="M 480 200 L 480 204 L 610 204 L 610 220" stroke="#4A5568" stroke-width="1.5" fill="none" marker-end="url(#pg-arrow)"/>
+
+                    <!-- Builder DAO -->
+                    <rect x="68" y="224" width="184" height="80" rx="12" fill="url(#pg-blue)"/>
+                    <text x="160" y="249" text-anchor="middle" font-size="9" fill="#BFDBFE" font-weight="600" letter-spacing="1">INITIATIVE DAO</text>
+                    <text x="160" y="268" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">Builder DAO</text>
+                    <text x="160" y="286" text-anchor="middle" font-size="10" fill="#BFDBFE">dApps &middot; DeFi &middot; Applications</text>
+                    <text x="160" y="298" text-anchor="middle" font-size="9" fill="#93C5FD">7-member council</text>
+
+                    <!-- OSET DAO -->
+                    <rect x="390" y="224" width="184" height="80" rx="12" fill="url(#pg-green)"/>
+                    <text x="482" y="249" text-anchor="middle" font-size="9" fill="#A7F3D0" font-weight="600" letter-spacing="1">INITIATIVE DAO</text>
+                    <text x="482" y="268" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">Open Source &amp;</text>
+                    <text x="482" y="284" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">Ecosystem Tooling</text>
+                    <text x="482" y="298" text-anchor="middle" font-size="9" fill="#6EE7B7">7-member council</text>
+
+                    <!-- Marketing DAO -->
+                    <rect x="710" y="224" width="184" height="80" rx="12" fill="url(#pg-red)"/>
+                    <text x="802" y="249" text-anchor="middle" font-size="9" fill="#FECACA" font-weight="600" letter-spacing="1">INITIATIVE DAO</text>
+                    <text x="802" y="268" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">Marketing DAO</text>
+                    <text x="802" y="286" text-anchor="middle" font-size="10" fill="#FECACA">Growth &middot; Events &middot; Awareness</text>
+                    <text x="802" y="298" text-anchor="middle" font-size="9" fill="#FCA5A5">7-member council</text>
+
+                    <!-- Arrow: split to Marketing -->
+                    <path d="M 480 200 L 480 204 L 802 204 L 802 220" stroke="#4A5568" stroke-width="1.5" fill="none" marker-end="url(#pg-arrow)"/>
+
+                    <!-- dRep DAO - governance overlay spanning width -->
+                    <rect x="68" y="340" width="826" height="56" rx="12" fill="url(#pg-purple)"/>
+                    <text x="482" y="365" text-anchor="middle" font-size="10" fill="#C7D2FE" font-weight="600" letter-spacing="1.5">GOVERNANCE LAYER</text>
+                    <text x="482" y="384" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">dRep DAO &mdash; Standards &middot; KPIs &middot; Elects 3/7 Council Seats &middot; Vote of No Confidence</text>
+
+                    <!-- Dashed oversight arrows from dRep to each DAO -->
+                    <line x1="160" y1="340" x2="160" y2="308" stroke="#7A73FF" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#pg-arrow-purple)" opacity="0.6"/>
+                    <line x1="482" y1="340" x2="482" y2="308" stroke="#7A73FF" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#pg-arrow-purple)" opacity="0.6"/>
+                    <line x1="802" y1="340" x2="802" y2="308" stroke="#7A73FF" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#pg-arrow-purple)" opacity="0.6"/>
+
+                    <!-- Ecosystem Recipients row -->
+                    <rect x="68" y="432" width="184" height="40" rx="8" fill="rgba(59,130,246,0.1)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+                    <text x="160" y="456" text-anchor="middle" font-size="11" fill="#60A5FA" font-weight="600">Funded Builders</text>
+
+                    <rect x="390" y="432" width="184" height="40" rx="8" fill="rgba(16,185,129,0.1)" stroke="rgba(16,185,129,0.3)" stroke-width="1"/>
+                    <text x="482" y="456" text-anchor="middle" font-size="11" fill="#34D399" font-weight="600">Funded Infrastructure</text>
+
+                    <rect x="710" y="432" width="184" height="40" rx="8" fill="rgba(239,68,68,0.1)" stroke="rgba(239,68,68,0.3)" stroke-width="1"/>
+                    <text x="802" y="456" text-anchor="middle" font-size="11" fill="#F87171" font-weight="600">Funded Campaigns</text>
+
+                    <!-- Arrows: DAOs → Recipients -->
+                    <line x1="160" y1="304" x2="160" y2="428" stroke="#3B82F6" stroke-width="1.5" marker-end="url(#pg-arrow)" opacity="0.5"/>
+                    <line x1="482" y1="304" x2="482" y2="428" stroke="#10B981" stroke-width="1.5" marker-end="url(#pg-arrow)" opacity="0.5"/>
+                    <line x1="802" y1="304" x2="802" y2="428" stroke="#EF4444" stroke-width="1.5" marker-end="url(#pg-arrow)" opacity="0.5"/>
+
+                    <!-- KPI Reporting bar -->
+                    <rect x="68" y="492" width="826" height="36" rx="8" fill="rgba(245,158,11,0.08)" stroke="rgba(245,158,11,0.3)" stroke-width="1"/>
+                    <text x="482" y="514" text-anchor="middle" font-size="11" font-weight="600" fill="#F59E0B">KPI Reporting &amp; Accountability &mdash; MAU &middot; TVL &middot; On-Chain Transactions &middot; Cardano 2030 Vision</text>
+
+                    <!-- Lines from recipients to KPI bar -->
+                    <line x1="160" y1="472" x2="160" y2="492" stroke="rgba(245,158,11,0.3)" stroke-width="1"/>
+                    <line x1="482" y1="472" x2="482" y2="492" stroke="rgba(245,158,11,0.3)" stroke-width="1"/>
+                    <line x1="802" y1="472" x2="802" y2="492" stroke="rgba(245,158,11,0.3)" stroke-width="1"/>
+                </svg>
+            </div>
+
+            <div class="pilot-legend">
+                <div class="pilot-legend-item">
+                    <div class="pilot-legend-line" style="background: #4A5568;"></div>
+                    <span data-i18n="pilot.legend.fund">Fund Flow</span>
+                </div>
+                <div class="pilot-legend-item">
+                    <div class="pilot-legend-line" style="background: #7A73FF; background-image: repeating-linear-gradient(90deg, #7A73FF 0px, #7A73FF 5px, transparent 5px, transparent 8px);"></div>
+                    <span data-i18n="pilot.legend.governance">Governance Oversight</span>
+                </div>
+                <div class="pilot-legend-item">
+                    <div class="pilot-legend-dot" style="background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.4);"></div>
+                    <span data-i18n="pilot.legend.kpi">KPI Reporting</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Governance Section -->
+    <section id="governance" class="light">
+        <div class="section-content">
+            <h2 data-i18n="governance.title">Governance & Membership</h2>
+            <p class="governance-intro" data-i18n="governance.intro">Who Governs. Who Gets In. How It Works.</p>
+
+            <div class="council-model">
+                <div class="council-title" data-i18n="governance.council.title">The 7-Seat Council Model</div>
+                <div class="council-visual">
+                    <div class="council-seat drep">dRep DAO<br>Seat 1</div>
+                    <div class="council-seat drep">dRep DAO<br>Seat 2</div>
+                    <div class="council-seat drep">dRep DAO<br>Seat 3</div>
+                    <div style="font-size: 20px; color: #ADBDCC;">+</div>
+                    <div class="council-seat dao">DAO Member<br>Seat 4</div>
+                    <div class="council-seat dao">DAO Member<br>Seat 5</div>
+                    <div class="council-seat dao">DAO Member<br>Seat 6</div>
+                    <div class="council-seat dao">DAO Member<br>Seat 7</div>
+                </div>
+                <div class="council-description">
+                    <p data-i18n="governance.council.desc1"><strong>3 seats</strong> elected by dRep DAO representatives + <strong>4 seats</strong> elected by Initiative DAO members = <strong>7-person governance council</strong></p>
+                    <p style="margin-top: 20px;" data-i18n="governance.council.desc2">Both Initiative DAO and dRep DAO members can nominate candidates. Council members are individuals, not entities, ensuring direct accountability.</p>
+                </div>
+            </div>
+
+            <h3 style="text-align: center; margin-bottom: 40px;" data-i18n="governance.membership.title">Membership Criteria by DAO</h3>
+            <div class="membership-cards">
+                <div class="membership-card">
+                    <h3 data-i18n="governance.builder.title">Builder DAO</h3>
+                    <p style="font-size: 14px; margin-bottom: 20px;"><strong data-i18n="governance.builder.desc">Funds live dApps and ecosystem applications</strong></p>
+                    <ul>
+                        <li data-i18n="governance.builder.li1">Live product on Cardano</li>
+                        <li data-i18n="governance.builder.li2">Produces Core KPI (MAU, TVL, or transactions)</li>
+                        <li data-i18n="governance.builder.li3">KYB/KYC verified</li>
+                        <li data-i18n="governance.builder.li4">Entity-based membership</li>
+                    </ul>
+                </div>
+                <div class="membership-card">
+                    <h3 data-i18n="governance.oset.title">OSET DAO</h3>
+                    <p style="font-size: 14px; margin-bottom: 20px;"><strong data-i18n="governance.oset.desc">Maintains infrastructure & tooling</strong></p>
+                    <ul>
+                        <li data-i18n="governance.oset.li1">Open-source libraries/SDKs</li>
+                        <li data-i18n="governance.oset.li2">Block explorers, indexers</li>
+                        <li data-i18n="governance.oset.li3">Core infrastructure projects</li>
+                        <li data-i18n="governance.oset.li4">KYB/KYC verified</li>
+                    </ul>
+                </div>
+                <div class="membership-card">
+                    <h3 data-i18n="governance.marketing.title">Marketing DAO</h3>
+                    <p style="font-size: 14px; margin-bottom: 20px;"><strong data-i18n="governance.marketing.desc">Drives growth & awareness</strong></p>
+                    <ul>
+                        <li data-i18n="governance.marketing.li1">Ecosystem marketing track record</li>
+                        <li data-i18n="governance.marketing.li2">Events, content, user acquisition</li>
+                        <li data-i18n="governance.marketing.li3">Measured impact on awareness</li>
+                        <li data-i18n="governance.marketing.li4">KYB/KYC verified</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3 style="text-align: center; margin-bottom: 40px;" data-i18n="governance.principles.title">Core Design Principles</h3>
+            <div class="principles">
+                <div class="principle">
+                    <div class="principle-icon">🧠</div>
+                    <h3 data-i18n="governance.p1.title">Domain Expertise</h3>
+                    <p data-i18n="governance.p1.desc">Informed voting by members with skin in the game and deep domain knowledge.</p>
+                </div>
+                <div class="principle">
+                    <div class="principle-icon">🏢</div>
+                    <h3 data-i18n="governance.p2.title">Entities Not Individuals</h3>
+                    <p data-i18n="governance.p2.desc">Membership tied to organizations/projects, not individuals, for stability.</p>
+                </div>
+                <div class="principle">
+                    <div class="principle-icon">✅</div>
+                    <h3 data-i18n="governance.p3.title">KYB/KYC Verified</h3>
+                    <p data-i18n="governance.p3.desc">All members undergo verification to prevent bad actors and ensure legitimacy.</p>
+                </div>
+                <div class="principle">
+                    <div class="principle-icon">🔄</div>
+                    <h3 data-i18n="governance.p4.title">Evolving Membership</h3>
+                    <p data-i18n="governance.p4.desc">New builders, tooling projects, and marketing organizations can join as they meet criteria.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- dRep DAO Section -->
+    <section id="drep" class="dark">
+        <div class="section-content">
+            <h2 data-i18n="drep.title">dRep DAO</h2>
+            <p style="text-align: center; font-size: 18px; max-width: 800px; margin: 0 auto 60px;" data-i18n="drep.intro">The governance coordination layer that sets standards, defines KPIs, and ensures accountability across all Initiative DAOs.</p>
+
+            <div class="cards-grid">
+                <div class="card">
+                    <h3 data-i18n="drep.card1.title">Governance Standards</h3>
+                    <p data-i18n="drep.card1.desc">dRep DAO establishes baseline governance standards and best practices that all Initiative DAOs follow.</p>
+                </div>
+                <div class="card">
+                    <h3 data-i18n="drep.card2.title">KPI Definition</h3>
+                    <p data-i18n="drep.card2.desc">Sets and evolves KPI requirements (MAU, TVL, transactions) to align with Treasury priorities.</p>
+                </div>
+                <div class="card">
+                    <h3 data-i18n="drep.card3.title">Council Elections</h3>
+                    <p data-i18n="drep.card3.desc">Elects 3 of the 7 council seats, representing dRep community interests in governance.</p>
+                </div>
+                <div class="card">
+                    <h3 data-i18n="drep.card4.title">Vote of No Confidence</h3>
+                    <p data-i18n="drep.card4.desc">Can initiate votes to remove underperforming or misaligned council members or DAOs.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Builder DAO Section -->
+    <section id="builder" class="light">
+        <div class="section-content">
+            <h2 data-i18n="builder.title">Builder DAO</h2>
+            <p style="text-align: center; font-size: 18px; max-width: 800px; margin: 0 auto 60px;" data-i18n="builder.intro">Funds live dApps and ecosystem applications that drive measurable Cardano adoption and value creation.</p>
+
+            <div class="track-record">
+                <h3 style="text-align: center; margin-bottom: 40px; color: #0A2540;" data-i18n="builder.track.title">Track Record of Impact</h3>
+                <div class="track-record-stats">
+                    <div class="stat">
+                        <div class="stat-value" data-i18n="builder.stat1.value">~12M ADA</div>
+                        <div class="stat-label" data-i18n="builder.stat1.label">Distributed</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-i18n="builder.stat2.value">34</div>
+                        <div class="stat-label" data-i18n="builder.stat2.label">Builders Funded</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" data-i18n="builder.stat3.value">100%</div>
+                        <div class="stat-label" data-i18n="builder.stat3.label">KPI Tracking</div>
+                    </div>
+                </div>
+                <div class="track-record-features">
+                    <div class="feature-item">
+                        <h4 style="color: #FFFFFF;" data-i18n="builder.feat1.title">Distributed Capital</h4>
+                        <p data-i18n="builder.feat1.desc">Approximately 12 million ADA distributed to 34 ecosystem builders over the past year, enabling real product development.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4 style="color: #FFFFFF;" data-i18n="builder.feat2.title">KPI Transparency</h4>
+                        <p data-i18n="builder.feat2.desc">All funded builders have tracked and reported their KPIs throughout the funding period with complete visibility.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4 style="color: #FFFFFF;" data-i18n="builder.feat3.title">Full Transparency</h4>
+                        <p data-i18n="builder.feat3.desc">All decisions, votes, and fund flows are publicly visible. No hidden allocations or opaque governance.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4 style="color: #FFFFFF;" data-i18n="builder.feat4.title">Democratic Voting</h4>
+                        <p data-i18n="builder.feat4.desc">One member, one vote governance model ensuring fair representation across all funded builders.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4 style="color: #FFFFFF;" data-i18n="builder.feat5.title">Smart Contract Treasury</h4>
+                        <p data-i18n="builder.feat5.desc">Treasury funds governed by smart contracts requiring collective governance approval for all disbursements.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4 style="color: #FFFFFF;" data-i18n="builder.feat6.title">Multi-Party Governance</h4>
+                        <p data-i18n="builder.feat6.desc">No single entity controls treasury access—multi-party on-chain governance enforced at the protocol level.</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="text-align: center; margin-bottom: 40px;" data-i18n="builder.features.title">Builder DAO Features</h3>
+            <div class="cards-grid">
+                <div class="card">
+                    <h3 data-i18n="builder.card1.title">Domain Focus</h3>
+                    <p data-i18n="builder.card1.desc">Specialized expertise in evaluating builder products and their ecosystem impact on Cardano adoption.</p>
+                </div>
+                <div class="card">
+                    <h3 data-i18n="builder.card2.title">Entity-Based Membership</h3>
+                    <p data-i18n="builder.card2.desc">Membership tied to organizations and live products, not individuals, ensuring consistent governance.</p>
+                </div>
+                <div class="card">
+                    <h3 data-i18n="builder.card3.title">7-Member Council</h3>
+                    <p data-i18n="builder.card3.desc">4 seats elected by Builder DAO members, 3 seats from dRep DAO, ensuring balanced representation.</p>
+                </div>
+                <div class="card">
+                    <h3 data-i18n="builder.card4.title">Dynamic Strategy</h3>
+                    <p data-i18n="builder.card4.desc">Funding strategies evolve based on ecosystem needs, market conditions, and KPI performance.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- OSET DAO Section -->
+    <section id="opensource" class="dark">
+        <div class="section-content">
+            <h2 data-i18n="oset.title">Open Source & Ecosystem Tooling DAO</h2>
+            <p style="text-align: center; font-size: 18px; max-width: 800px; margin: 0 auto 60px;" data-i18n="oset.intro">Funds and maintains the critical infrastructure, SDKs, and developer tools that power Cardano's ecosystem.</p>
+
+            <div class="cards-grid">
+                <div class="card">
+                    <h3 data-i18n="oset.card1.title">Maintenance & Sustainability</h3>
+                    <p data-i18n="oset.card1.desc">Provides ongoing funding for critical open-source projects that require long-term maintenance and updates.</p>
+                </div>
+                <div class="card">
+                    <h3 data-i18n="oset.card2.title">New Tooling Development</h3>
+                    <p data-i18n="oset.card2.desc">Funds development of new SDKs, libraries, and tools that expand Cardano's developer capabilities.</p>
+                </div>
+                <div class="card">
+                    <h3 data-i18n="oset.card3.title">Domain-Specific KPIs</h3>
+                    <p data-i18n="oset.card3.desc">Tracks usage metrics for libraries, repository activity, adoption by builders, and developer ecosystem growth.</p>
+                </div>
+                <div class="card">
+                    <h3 data-i18n="oset.card4.title">The Developer Flywheel</h3>
+                    <p data-i18n="oset.card4.desc">Better tools → More builders → More dApps → Stronger ecosystem → Better KPI metrics.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Marketing DAO Section -->
+    <section id="marketing" class="light">
+        <div class="section-content">
+            <h2 data-i18n="marketing.title">Marketing DAO</h2>
+            <p style="text-align: center; font-size: 18px; max-width: 800px; margin: 0 auto 60px;" data-i18n="marketing.intro">Drives awareness, user acquisition, and measurable growth for the Cardano ecosystem.</p>
+
+            <div class="cards-grid">
+                <div class="card">
+                    <h3 data-i18n="marketing.card1.title">Awareness Campaigns</h3>
+                    <p data-i18n="marketing.card1.desc">Funds targeted marketing campaigns to increase Cardano's visibility in key markets and communities.</p>
+                </div>
+                <div class="card">
+                    <h3 data-i18n="marketing.card2.title">User Acquisition</h3>
+                    <p data-i18n="marketing.card2.desc">Supports initiatives that bring new users to Cardano dApps and ecosystem projects.</p>
+                </div>
+                <div class="card">
+                    <h3 data-i18n="marketing.card3.title">Events & Conferences</h3>
+                    <p data-i18n="marketing.card3.desc">Organizes and sponsors major events that bring the ecosystem together and attract new participants.</p>
+                </div>
+                <div class="card">
+                    <h3 data-i18n="marketing.card4.title">Measurable Growth</h3>
+                    <p data-i18n="marketing.card4.desc">Tracks MAU growth, user engagement metrics, and market awareness to demonstrate impact and accountability.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="footer" class="dark">
+        <h2 data-i18n="footer.title">The Treasury Should Work Like a Strategic Capital Allocator</h2>
+        <p style="font-size: 18px; margin-bottom: 40px; max-width: 800px; margin-left: auto; margin-right: auto;" data-i18n="footer.desc">Initiative DAOs represent a new model of governance where specialized teams manage capital allocation in their domains, with transparent KPI accountability and democratic oversight.</p>
+        <button class="cta-button" data-i18n="footer.cta">Explore the Framework</button>
+    </footer>
+
+    <script>
+        // ============ UNIFIED NODE NETWORK BACKGROUND ============
+        (function() {
+            const canvas = document.getElementById('network-bg');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const dpr = Math.min(window.devicePixelRatio, 2);
+
+            let W, H;
+            function resize() {
+                W = window.innerWidth;
+                H = window.innerHeight;
+                canvas.width = W * dpr;
+                canvas.height = H * dpr;
+                canvas.style.width = W + 'px';
+                canvas.style.height = H + 'px';
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            // Node types: large (hub) and small (satellite)
+            const LARGE_COUNT = 6;
+            const MEDIUM_COUNT = 10;
+            const SMALL_COUNT = 40;
+            const CONNECTION_DIST = 220;
+            const LARGE_CONNECT_DIST = 450;
+            const MOUSE_CONNECT_COUNT = 7;
+            const MOUSE_REPEL_DIST = 150;
+            const MOUSE_REPEL_STRENGTH = 0.8;
+
+            // Mouse tracking
+            let mouseX = -1000, mouseY = -1000;
+            let mouseActive = false;
+            canvas.style.pointerEvents = 'none';
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                mouseActive = true;
+            });
+            document.addEventListener('mouseleave', () => { mouseActive = false; });
+
+            function createNode(size) {
+                let r, speed;
+                if (size === 'large') { r = 22 + Math.random() * 14; speed = 0.12; }
+                else if (size === 'medium') { r = 10 + Math.random() * 8; speed = 0.2; }
+                else { r = 3 + Math.random() * 5; speed = 0.3; }
+                return {
+                    x: Math.random() * W,
+                    y: Math.random() * H,
+                    vx: (Math.random() - 0.5) * speed,
+                    vy: (Math.random() - 0.5) * speed,
+                    r: r,
+                    baseR: r,
+                    size: size,
+                    isLarge: size === 'large' || size === 'medium',
+                    pulse: Math.random() * Math.PI * 2,
+                    pulseSpeed: 0.004 + Math.random() * 0.008,
+                    colorIdx: Math.floor(Math.random() * 4),
+                };
+            }
+
+            let nodes = [];
+            function initNodes() {
+                nodes = [];
+                for (let i = 0; i < LARGE_COUNT; i++) nodes.push(createNode('large'));
+                for (let i = 0; i < MEDIUM_COUNT; i++) nodes.push(createNode('medium'));
+                for (let i = 0; i < SMALL_COUNT; i++) nodes.push(createNode('small'));
+            }
+            initNodes();
+            window.addEventListener('resize', () => {
+                nodes.forEach(n => {
+                    if (n.x > W) n.x = W * Math.random();
+                    if (n.y > H) n.y = H * Math.random();
+                });
+            });
+
+            function getColors() {
+                const light = document.body.classList.contains('light-mode');
+                if (light) {
+                    return {
+                        bg: '#F8FAFF',
+                        nodeColors: [
+                            'rgba(99, 91, 255, 0.12)',   // purple
+                            'rgba(0, 212, 170, 0.10)',    // cyan
+                            'rgba(128, 233, 255, 0.10)',  // light blue
+                            'rgba(122, 115, 255, 0.10)',  // violet
+                        ],
+                        nodeBorders: [
+                            'rgba(99, 91, 255, 0.25)',
+                            'rgba(0, 212, 170, 0.20)',
+                            'rgba(128, 233, 255, 0.20)',
+                            'rgba(122, 115, 255, 0.20)',
+                        ],
+                        glowColors: [
+                            'rgba(99, 91, 255, 0.06)',
+                            'rgba(0, 212, 170, 0.05)',
+                            'rgba(128, 233, 255, 0.05)',
+                            'rgba(122, 115, 255, 0.05)',
+                        ],
+                        lineColor: 'rgba(99, 91, 255, 0.06)',
+                        lineColorStrong: 'rgba(99, 91, 255, 0.12)',
+                        mouseLineColor: 'rgba(99, 91, 255, 0.3)',
+                        mouseDot: 'rgba(99, 91, 255, 0.4)',
+                    };
+                } else {
+                    return {
+                        bg: '#0A2540',
+                        nodeColors: [
+                            'rgba(99, 91, 255, 0.15)',
+                            'rgba(0, 212, 170, 0.12)',
+                            'rgba(128, 233, 255, 0.12)',
+                            'rgba(122, 115, 255, 0.12)',
+                        ],
+                        nodeBorders: [
+                            'rgba(99, 91, 255, 0.4)',
+                            'rgba(0, 212, 170, 0.35)',
+                            'rgba(128, 233, 255, 0.3)',
+                            'rgba(122, 115, 255, 0.35)',
+                        ],
+                        glowColors: [
+                            'rgba(99, 91, 255, 0.08)',
+                            'rgba(0, 212, 170, 0.06)',
+                            'rgba(128, 233, 255, 0.06)',
+                            'rgba(122, 115, 255, 0.06)',
+                        ],
+                        lineColor: 'rgba(128, 233, 255, 0.04)',
+                        lineColorStrong: 'rgba(128, 233, 255, 0.1)',
+                        mouseLineColor: 'rgba(128, 233, 255, 0.35)',
+                        mouseDot: 'rgba(128, 233, 255, 0.5)',
+                    };
+                }
+            }
+
+            function draw() {
+                const c = getColors();
+
+                // Clear with bg
+                ctx.fillStyle = c.bg;
+                ctx.fillRect(0, 0, W, H);
+
+                // Update positions + mouse repulsion
+                nodes.forEach(n => {
+                    // Mouse repulsion
+                    if (mouseActive) {
+                        const dx = n.x - mouseX;
+                        const dy = n.y - mouseY;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < MOUSE_REPEL_DIST && dist > 1) {
+                            const force = (MOUSE_REPEL_DIST - dist) / MOUSE_REPEL_DIST * MOUSE_REPEL_STRENGTH;
+                            n.vx += (dx / dist) * force * 0.15;
+                            n.vy += (dy / dist) * force * 0.15;
+                        }
+                    }
+
+                    // Dampen velocity
+                    n.vx *= 0.998;
+                    n.vy *= 0.998;
+
+                    // Minimum drift speed so nodes don't stop
+                    const speed = Math.sqrt(n.vx * n.vx + n.vy * n.vy);
+                    const minSpeed = n.size === 'large' ? 0.08 : n.size === 'medium' ? 0.12 : 0.18;
+                    if (speed < minSpeed) {
+                        n.vx += (Math.random() - 0.5) * 0.02;
+                        n.vy += (Math.random() - 0.5) * 0.02;
+                    }
+
+                    n.x += n.vx;
+                    n.y += n.vy;
+                    n.pulse += n.pulseSpeed;
+                    n.r = n.baseR + Math.sin(n.pulse) * (n.size === 'large' ? 3 : n.size === 'medium' ? 1.5 : 0.8);
+
+                    // Bounce off edges
+                    if (n.x < -50) n.vx = Math.abs(n.vx);
+                    if (n.x > W + 50) n.vx = -Math.abs(n.vx);
+                    if (n.y < -50) n.vy = Math.abs(n.vy);
+                    if (n.y > H + 50) n.vy = -Math.abs(n.vy);
+                });
+
+                // Draw node-to-node connections
+                for (let i = 0; i < nodes.length; i++) {
+                    for (let j = i + 1; j < nodes.length; j++) {
+                        const a = nodes[i], b = nodes[j];
+                        const dx = a.x - b.x, dy = a.y - b.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        const maxDist = (a.isLarge && b.isLarge) ? LARGE_CONNECT_DIST : CONNECTION_DIST;
+                        if (dist < maxDist) {
+                            const alpha = 1 - dist / maxDist;
+                            ctx.beginPath();
+                            ctx.moveTo(a.x, a.y);
+                            ctx.lineTo(b.x, b.y);
+                            ctx.strokeStyle = (a.isLarge || b.isLarge) ? c.lineColorStrong : c.lineColor;
+                            ctx.lineWidth = (a.size === 'large' && b.size === 'large') ? 2 * alpha : (a.isLarge || b.isLarge) ? 1.2 * alpha : 0.6 * alpha;
+                            ctx.globalAlpha = alpha;
+                            ctx.stroke();
+                            ctx.globalAlpha = 1;
+                        }
+                    }
+                }
+
+                // Draw mouse-to-nearest-nodes connections
+                if (mouseActive) {
+                    const dists = nodes.map((n, i) => ({
+                        i, dist: Math.sqrt((n.x - mouseX) ** 2 + (n.y - mouseY) ** 2)
+                    })).sort((a, b) => a.dist - b.dist).slice(0, MOUSE_CONNECT_COUNT);
+
+                    dists.forEach(d => {
+                        const n = nodes[d.i];
+                        const alpha = Math.max(0, 1 - d.dist / 400);
+                        if (alpha > 0) {
+                            ctx.beginPath();
+                            ctx.moveTo(mouseX, mouseY);
+                            ctx.lineTo(n.x, n.y);
+                            ctx.strokeStyle = c.mouseLineColor;
+                            ctx.lineWidth = 1.5 * alpha;
+                            ctx.globalAlpha = alpha * 0.7;
+                            ctx.stroke();
+                            ctx.globalAlpha = 1;
+                        }
+                    });
+
+                    // Small cursor dot
+                    ctx.beginPath();
+                    ctx.arc(mouseX, mouseY, 4, 0, Math.PI * 2);
+                    ctx.fillStyle = c.mouseDot;
+                    ctx.fill();
+                }
+
+                // Draw nodes
+                nodes.forEach(n => {
+                    const ci = n.colorIdx;
+
+                    // Glow for large and medium nodes
+                    if (n.isLarge) {
+                        const glowR = n.size === 'large' ? n.r * 5 : n.r * 3.5;
+                        const glow = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, glowR);
+                        glow.addColorStop(0, c.glowColors[ci]);
+                        glow.addColorStop(1, 'transparent');
+                        ctx.beginPath();
+                        ctx.arc(n.x, n.y, glowR, 0, Math.PI * 2);
+                        ctx.fillStyle = glow;
+                        ctx.fill();
+                    }
+
+                    // Glass fill
+                    ctx.beginPath();
+                    ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+                    ctx.fillStyle = c.nodeColors[ci];
+                    ctx.fill();
+
+                    // Border
+                    ctx.beginPath();
+                    ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+                    ctx.strokeStyle = c.nodeBorders[ci];
+                    ctx.lineWidth = n.size === 'large' ? 2 : n.size === 'medium' ? 1.2 : 0.6;
+                    ctx.stroke();
+
+                    // Glass highlight on large and medium nodes
+                    if (n.isLarge) {
+                        ctx.beginPath();
+                        ctx.arc(n.x, n.y - n.r * 0.2, n.r * 0.65, 0, Math.PI, true);
+                        ctx.fillStyle = document.body.classList.contains('light-mode')
+                            ? 'rgba(255,255,255,0.35)'
+                            : 'rgba(255,255,255,0.1)';
+                        ctx.fill();
+                    }
+                });
+
+                requestAnimationFrame(draw);
+            }
+            draw();
+        })();
+
+        // Scroll reveal animations
+        const revealElements = document.querySelectorAll('.card, .membership-card, .feature-item');
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.classList.add('reveal');
+                    }, index * 100);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        revealElements.forEach(el => observer.observe(el));
+
+        // Progress bar
+        const progressBar = document.querySelector('.progress-bar');
+        window.addEventListener('scroll', () => {
+            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrolled = window.scrollY;
+            progressBar.style.transform = `scaleX(${scrolled / scrollHeight})`;
+        });
+
+        // Sticky nav
+        const nav = document.querySelector('nav');
+        const heroSection = document.getElementById('hero');
+        const navLinks = document.querySelectorAll('nav a');
+
+        const navObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) {
+                    nav.classList.add('visible');
+                } else {
+                    nav.classList.remove('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        navObserver.observe(heroSection);
+
+        // Active nav link tracking
+        const sections = document.querySelectorAll('section');
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (scrollY >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').slice(1) === current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Smooth scroll behavior
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                if (targetSection) {
+                    targetSection.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // CTA button
+        const ctaButton = document.querySelector('.cta-button');
+        if (ctaButton) {
+            ctaButton.addEventListener('click', () => {
+                document.getElementById('framework').scrollIntoView({ behavior: 'smooth' });
+            });
+        }
+
+        // Theme toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const themeKnob = document.getElementById('themeKnob');
+        let isDark = true;
+
+        function applyTheme(dark) {
+            isDark = dark;
+            if (dark) {
+                document.body.classList.remove('light-mode');
+                themeKnob.innerHTML = '&#9790;';
+            } else {
+                document.body.classList.add('light-mode');
+                themeKnob.innerHTML = '&#9788;';
+            }
+        }
+
+        // Check saved preference
+        if (localStorage.getItem('theme') === 'light') {
+            applyTheme(false);
+        }
+
+        themeToggle.addEventListener('click', () => {
+            applyTheme(!isDark ? true : false);
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+
+        // ============ INTERNATIONALIZATION (i18n) ============
+        const translations = {
+            en: {
+                'nav.framework': 'Framework',
+                'nav.pilot': 'Pilot Structure',
+                'nav.governance': 'Governance',
+                'nav.drep': 'dRep DAO',
+                'nav.builder': 'Builder DAO',
+                'nav.opensource': 'OSET DAO',
+                'nav.marketing': 'Marketing DAO',
+                'hero.badge': 'Cardano Governance',
+                'hero.title': 'Rethinking Treasury Allocation',
+                'hero.subtitle': 'Strategy-driven capital allocation through specialized Initiative DAOs, where treasury funds flow to builders, infrastructure, and growth initiatives with transparent KPI accountability.',
+                'hero.scroll': 'Scroll to explore',
+                'framework.title': 'The Framework',
+                'framework.intro': 'Initiative DAOs represent strategic capital buckets within Cardano\'s Treasury, each with specialized expertise and KPI accountability mechanisms.',
+                'framework.step1.title': 'Treasury Allocates',
+                'framework.step1.desc': 'dReps approve sector-level funding to Initiative DAOs',
+                'framework.step2.title': 'DAOs Deploy Capital',
+                'framework.step2.desc': 'Domain experts fund the highest-impact initiatives',
+                'framework.step3.title': 'KPI Accountability',
+                'framework.step3.desc': 'Measure results, adjust allocations, repeat',
+                'framework.cycle.label': 'Continuous',
+                'framework.cycle.text': 'Capital Cycle',
+                'framework.cycle.repeat': '\u21B4 Cycle repeats \u2014 capital compounds',
+                'kpi.mau': 'MAU',
+                'kpi.tvl': 'TVL',
+                'kpi.txn': 'Transactions',
+                'kpi.mau.label': 'Monthly Active Users',
+                'kpi.tvl.label': 'Total Value Locked',
+                'kpi.txn.label': 'On-Chain Activity',
+                'framework.card1.title': 'Governance Flow',
+                'framework.card1.desc': 'Treasury allocation flows through Intersect to specialized DAOs, each governed by elected representatives and subject to dRep DAO oversight.',
+                'framework.card2.title': 'Domain Expertise',
+                'framework.card2.desc': 'Each Initiative DAO focuses on a specific domain: builder funding, open-source tooling, or ecosystem marketing.',
+                'framework.card3.title': 'On-Chain Accountability',
+                'framework.card3.desc': 'Smart contracts enforce governance decisions and ensure transparency in all treasury movements and KPI reporting.',
+                'pilot.title': 'The 2026 Pilot Structure',
+                'pilot.intro': 'Three Initiative DAOs, one governance layer, and a clear accountability chain from treasury to ecosystem impact.',
+                'pilot.legend.fund': 'Fund Flow',
+                'pilot.legend.governance': 'Governance Oversight',
+                'pilot.legend.kpi': 'KPI Reporting',
+                'governance.title': 'Governance & Membership',
+                'governance.intro': 'Who Governs. Who Gets In. How It Works.',
+                'governance.council.title': 'The 7-Seat Council Model',
+                'governance.council.desc1': '<strong>3 seats</strong> elected by dRep DAO representatives + <strong>4 seats</strong> elected by Initiative DAO members = <strong>7-person governance council</strong>',
+                'governance.council.desc2': 'Both Initiative DAO and dRep DAO members can nominate candidates. Council members are individuals, not entities, ensuring direct accountability.',
+                'governance.membership.title': 'Membership Criteria by DAO',
+                'governance.builder.title': 'Builder DAO',
+                'governance.builder.desc': 'Funds live dApps and ecosystem applications',
+                'governance.builder.li1': 'Live product on Cardano',
+                'governance.builder.li2': 'Produces Core KPI (MAU, TVL, or transactions)',
+                'governance.builder.li3': 'KYB/KYC verified',
+                'governance.builder.li4': 'Entity-based membership',
+                'governance.oset.title': 'OSET DAO',
+                'governance.oset.desc': 'Maintains infrastructure & tooling',
+                'governance.oset.li1': 'Open-source libraries/SDKs',
+                'governance.oset.li2': 'Block explorers, indexers',
+                'governance.oset.li3': 'Core infrastructure projects',
+                'governance.oset.li4': 'KYB/KYC verified',
+                'governance.marketing.title': 'Marketing DAO',
+                'governance.marketing.desc': 'Drives growth & awareness',
+                'governance.marketing.li1': 'Ecosystem marketing track record',
+                'governance.marketing.li2': 'Events, content, user acquisition',
+                'governance.marketing.li3': 'Measured impact on awareness',
+                'governance.marketing.li4': 'KYB/KYC verified',
+                'governance.principles.title': 'Core Design Principles',
+                'governance.p1.title': 'Domain Expertise',
+                'governance.p1.desc': 'Informed voting by members with skin in the game and deep domain knowledge.',
+                'governance.p2.title': 'Entities Not Individuals',
+                'governance.p2.desc': 'Membership tied to organizations/projects, not individuals, for stability.',
+                'governance.p3.title': 'KYB/KYC Verified',
+                'governance.p3.desc': 'All members undergo verification to prevent bad actors and ensure legitimacy.',
+                'governance.p4.title': 'Evolving Membership',
+                'governance.p4.desc': 'New builders, tooling projects, and marketing organizations can join as they meet criteria.',
+                'drep.title': 'dRep DAO',
+                'drep.intro': 'The governance coordination layer that sets standards, defines KPIs, and ensures accountability across all Initiative DAOs.',
+                'drep.card1.title': 'Governance Standards',
+                'drep.card1.desc': 'dRep DAO establishes baseline governance standards and best practices that all Initiative DAOs follow.',
+                'drep.card2.title': 'KPI Definition',
+                'drep.card2.desc': 'Sets and evolves KPI requirements (MAU, TVL, transactions) to align with Treasury priorities.',
+                'drep.card3.title': 'Council Elections',
+                'drep.card3.desc': 'Elects 3 of the 7 council seats, representing dRep community interests in governance.',
+                'drep.card4.title': 'Vote of No Confidence',
+                'drep.card4.desc': 'Can initiate votes to remove underperforming or misaligned council members or DAOs.',
+                'builder.title': 'Builder DAO',
+                'builder.intro': 'Funds live dApps and ecosystem applications that drive measurable Cardano adoption and value creation.',
+                'builder.track.title': 'Track Record of Impact',
+                'builder.stat1.value': '~12M ADA',
+                'builder.stat1.label': 'Distributed',
+                'builder.stat2.value': '34',
+                'builder.stat2.label': 'Builders Funded',
+                'builder.stat3.value': '100%',
+                'builder.stat3.label': 'KPI Tracking',
+                'builder.feat1.title': 'Distributed Capital',
+                'builder.feat1.desc': 'Approximately 12 million ADA distributed to 34 ecosystem builders over the past year, enabling real product development.',
+                'builder.feat2.title': 'KPI Transparency',
+                'builder.feat2.desc': 'All funded builders have tracked and reported their KPIs throughout the funding period with complete visibility.',
+                'builder.feat3.title': 'Full Transparency',
+                'builder.feat3.desc': 'All decisions, votes, and fund flows are publicly visible. No hidden allocations or opaque governance.',
+                'builder.feat4.title': 'Democratic Voting',
+                'builder.feat4.desc': 'One member, one vote governance model ensuring fair representation across all funded builders.',
+                'builder.feat5.title': 'Smart Contract Treasury',
+                'builder.feat5.desc': 'Treasury funds governed by smart contracts requiring collective governance approval for all disbursements.',
+                'builder.feat6.title': 'Multi-Party Governance',
+                'builder.feat6.desc': 'No single entity controls treasury access\u2014multi-party on-chain governance enforced at the protocol level.',
+                'builder.features.title': 'Builder DAO Features',
+                'builder.card1.title': 'Domain Focus',
+                'builder.card1.desc': 'Specialized expertise in evaluating builder products and their ecosystem impact on Cardano adoption.',
+                'builder.card2.title': 'Entity-Based Membership',
+                'builder.card2.desc': 'Membership tied to organizations and live products, not individuals, ensuring consistent governance.',
+                'builder.card3.title': '7-Member Council',
+                'builder.card3.desc': '4 seats elected by Builder DAO members, 3 seats from dRep DAO, ensuring balanced representation.',
+                'builder.card4.title': 'Dynamic Strategy',
+                'builder.card4.desc': 'Funding strategies evolve based on ecosystem needs, market conditions, and KPI performance.',
+                'oset.title': 'Open Source & Ecosystem Tooling DAO',
+                'oset.intro': 'Funds and maintains the critical infrastructure, SDKs, and developer tools that power Cardano\'s ecosystem.',
+                'oset.card1.title': 'Maintenance & Sustainability',
+                'oset.card1.desc': 'Provides ongoing funding for critical open-source projects that require long-term maintenance and updates.',
+                'oset.card2.title': 'New Tooling Development',
+                'oset.card2.desc': 'Funds development of new SDKs, libraries, and tools that expand Cardano\'s developer capabilities.',
+                'oset.card3.title': 'Domain-Specific KPIs',
+                'oset.card3.desc': 'Tracks usage metrics for libraries, repository activity, adoption by builders, and developer ecosystem growth.',
+                'oset.card4.title': 'The Developer Flywheel',
+                'oset.card4.desc': 'Better tools \u2192 More builders \u2192 More dApps \u2192 Stronger ecosystem \u2192 Better KPI metrics.',
+                'marketing.title': 'Marketing DAO',
+                'marketing.intro': 'Drives awareness, user acquisition, and measurable growth for the Cardano ecosystem.',
+                'marketing.card1.title': 'Awareness Campaigns',
+                'marketing.card1.desc': 'Funds targeted marketing campaigns to increase Cardano\'s visibility in key markets and communities.',
+                'marketing.card2.title': 'User Acquisition',
+                'marketing.card2.desc': 'Supports initiatives that bring new users to Cardano dApps and ecosystem projects.',
+                'marketing.card3.title': 'Events & Conferences',
+                'marketing.card3.desc': 'Organizes and sponsors major events that bring the ecosystem together and attract new participants.',
+                'marketing.card4.title': 'Measurable Growth',
+                'marketing.card4.desc': 'Tracks MAU growth, user engagement metrics, and market awareness to demonstrate impact and accountability.',
+                'footer.title': 'The Treasury Should Work Like a Strategic Capital Allocator',
+                'footer.desc': 'Initiative DAOs represent a new model of governance where specialized teams manage capital allocation in their domains, with transparent KPI accountability and democratic oversight.',
+                'footer.cta': 'Explore the Framework',
+            },
+            ja: {
+                'nav.framework': 'フレームワーク',
+                'nav.pilot': 'パイロット構造',
+                'nav.governance': 'ガバナンス',
+                'nav.drep': 'dRep DAO',
+                'nav.builder': 'ビルダーDAO',
+                'nav.opensource': 'OSET DAO',
+                'nav.marketing': 'マーケティングDAO',
+                'hero.badge': 'カルダノ ガバナンス',
+                'hero.title': '国庫配分の再考',
+                'hero.subtitle': '専門的なイニシアチブDAOを通じた戦略的資本配分。国庫資金がビルダー、インフラ、成長イニシアチブに透明なKPI説明責任とともに流れます。',
+                'hero.scroll': 'スクロールして探索',
+                'framework.title': 'フレームワーク',
+                'framework.intro': 'イニシアチブDAOは、カルダノ国庫内の戦略的資本バケットであり、それぞれが専門的な知識とKPI説明責任メカニズムを備えています。',
+                'framework.step1.title': '国庫が配分',
+                'framework.step1.desc': 'dRepがイニシアチブDAOへのセクターレベルの資金を承認',
+                'framework.step2.title': 'DAOが資本を展開',
+                'framework.step2.desc': 'ドメイン専門家が最もインパクトの高いイニシアチブに資金提供',
+                'framework.step3.title': 'KPI説明責任',
+                'framework.step3.desc': '結果を測定し、配分を調整し、繰り返す',
+                'framework.cycle.label': '継続的',
+                'framework.cycle.text': '資本サイクル',
+                'framework.cycle.repeat': '\u21B4 サイクルが繰り返される — 資本が複利で増加',
+                'kpi.mau': 'MAU',
+                'kpi.tvl': 'TVL',
+                'kpi.txn': 'トランザクション',
+                'kpi.mau.label': '月間アクティブユーザー',
+                'kpi.tvl.label': 'ロックされた総価値',
+                'kpi.txn.label': 'オンチェーン活動',
+                'framework.card1.title': 'ガバナンスフロー',
+                'framework.card1.desc': '国庫配分はIntersectを通じて専門DAOに流れ、各DAOは選出された代表者によって管理され、dRep DAOの監督を受けます。',
+                'framework.card2.title': 'ドメイン専門性',
+                'framework.card2.desc': '各イニシアチブDAOは特定のドメインに焦点を当てます：ビルダー資金、オープンソースツール、またはエコシステムマーケティング。',
+                'framework.card3.title': 'オンチェーン説明責任',
+                'framework.card3.desc': 'スマートコントラクトがガバナンス決定を執行し、すべての国庫移動とKPI報告の透明性を確保します。',
+                'pilot.title': '2026年パイロット構造',
+                'pilot.intro': '3つのイニシアチブDAO、1つのガバナンス層、国庫からエコシステムインパクトへの明確な説明責任チェーン。',
+                'pilot.legend.fund': '資金フロー',
+                'pilot.legend.governance': 'ガバナンス監督',
+                'pilot.legend.kpi': 'KPI報告',
+                'governance.title': 'ガバナンスとメンバーシップ',
+                'governance.intro': '誰がガバナンスするか。誰が参加するか。どう機能するか。',
+                'governance.council.title': '7議席カウンシルモデル',
+                'governance.council.desc1': '<strong>3議席</strong>はdRep DAO代表者が選出 + <strong>4議席</strong>はイニシアチブDAOメンバーが選出 = <strong>7人のガバナンスカウンシル</strong>',
+                'governance.council.desc2': 'イニシアチブDAOとdRep DAOの両メンバーが候補者を指名できます。カウンシルメンバーは個人であり、組織ではなく、直接的な説明責任を確保します。',
+                'governance.membership.title': 'DAO別メンバーシップ基準',
+                'governance.builder.title': 'ビルダーDAO',
+                'governance.builder.desc': 'ライブdAppとエコシステムアプリケーションに資金提供',
+                'governance.builder.li1': 'カルダノ上のライブ製品',
+                'governance.builder.li2': 'コアKPIを生成（MAU、TVL、またはトランザクション）',
+                'governance.builder.li3': 'KYB/KYC認証済み',
+                'governance.builder.li4': 'エンティティベースのメンバーシップ',
+                'governance.oset.title': 'OSET DAO',
+                'governance.oset.desc': 'インフラとツールを維持',
+                'governance.oset.li1': 'オープンソースライブラリ/SDK',
+                'governance.oset.li2': 'ブロックエクスプローラー、インデクサー',
+                'governance.oset.li3': 'コアインフラプロジェクト',
+                'governance.oset.li4': 'KYB/KYC認証済み',
+                'governance.marketing.title': 'マーケティングDAO',
+                'governance.marketing.desc': '成長と認知度を推進',
+                'governance.marketing.li1': 'エコシステムマーケティングの実績',
+                'governance.marketing.li2': 'イベント、コンテンツ、ユーザー獲得',
+                'governance.marketing.li3': '認知度への測定可能なインパクト',
+                'governance.marketing.li4': 'KYB/KYC認証済み',
+                'governance.principles.title': 'コア設計原則',
+                'governance.p1.title': 'ドメイン専門性',
+                'governance.p1.desc': '深いドメイン知識を持つメンバーによるインフォームド・ボーティング。',
+                'governance.p2.title': '個人ではなくエンティティ',
+                'governance.p2.desc': '安定性のため、個人ではなく組織/プロジェクトに紐付けられたメンバーシップ。',
+                'governance.p3.title': 'KYB/KYC認証済み',
+                'governance.p3.desc': '悪意のあるアクターを防止し、正当性を確保するためにすべてのメンバーが認証を受けます。',
+                'governance.p4.title': '進化するメンバーシップ',
+                'governance.p4.desc': '基準を満たした新しいビルダー、ツールプロジェクト、マーケティング組織が参加できます。',
+                'drep.title': 'dRep DAO',
+                'drep.intro': 'すべてのイニシアチブDAO全体の基準を設定し、KPIを定義し、説明責任を確保するガバナンス調整層。',
+                'drep.card1.title': 'ガバナンス基準',
+                'drep.card1.desc': 'dRep DAOは、すべてのイニシアチブDAOが従う基本的なガバナンス基準とベストプラクティスを確立します。',
+                'drep.card2.title': 'KPI定義',
+                'drep.card2.desc': '国庫の優先事項に合わせてKPI要件（MAU、TVL、トランザクション）を設定し進化させます。',
+                'drep.card3.title': 'カウンシル選挙',
+                'drep.card3.desc': '7つのカウンシル議席のうち3つを選出し、ガバナンスにおけるdRepコミュニティの利益を代表します。',
+                'drep.card4.title': '不信任投票',
+                'drep.card4.desc': 'パフォーマンスが低い、または方針が合わないカウンシルメンバーやDAOを解任する投票を開始できます。',
+                'builder.title': 'ビルダーDAO',
+                'builder.intro': 'カルダノの採用と価値創造を測定可能な形で推進するライブdAppとエコシステムアプリケーションに資金提供。',
+                'builder.track.title': 'インパクトの実績',
+                'builder.stat1.value': '約1,200万ADA',
+                'builder.stat1.label': '配布済み',
+                'builder.stat2.value': '34',
+                'builder.stat2.label': 'ビルダーに資金提供',
+                'builder.stat3.value': '100%',
+                'builder.stat3.label': 'KPIトラッキング',
+                'builder.feat1.title': '資本の配布',
+                'builder.feat1.desc': '過去1年間で34のエコシステムビルダーに約1,200万ADAを配布し、実際の製品開発を可能にしました。',
+                'builder.feat2.title': 'KPIの透明性',
+                'builder.feat2.desc': 'すべての資金提供されたビルダーが資金提供期間を通じてKPIを追跡・報告し、完全な可視性を確保。',
+                'builder.feat3.title': '完全な透明性',
+                'builder.feat3.desc': 'すべての決定、投票、資金の流れが公開されています。隠された配分や不透明なガバナンスはありません。',
+                'builder.feat4.title': '民主的投票',
+                'builder.feat4.desc': 'すべての資金提供されたビルダー間で公正な代表を確保する1メンバー1票のガバナンスモデル。',
+                'builder.feat5.title': 'スマートコントラクト国庫',
+                'builder.feat5.desc': 'すべての支出に集団ガバナンスの承認を必要とするスマートコントラクトによって管理される国庫資金。',
+                'builder.feat6.title': 'マルチパーティガバナンス',
+                'builder.feat6.desc': '単一のエンティティが国庫にアクセスすることはできません。プロトコルレベルで強制されるマルチパーティオンチェーンガバナンス。',
+                'builder.features.title': 'ビルダーDAO機能',
+                'builder.card1.title': 'ドメインフォーカス',
+                'builder.card1.desc': 'ビルダー製品とカルダノ採用へのエコシステムインパクトを評価する専門的な知識。',
+                'builder.card2.title': 'エンティティベースのメンバーシップ',
+                'builder.card2.desc': '一貫したガバナンスを確保するため、個人ではなく組織とライブ製品に紐付けられたメンバーシップ。',
+                'builder.card3.title': '7人のカウンシル',
+                'builder.card3.desc': 'ビルダーDAOメンバーが4議席を選出、dRep DAOから3議席、バランスの取れた代表を確保。',
+                'builder.card4.title': 'ダイナミック戦略',
+                'builder.card4.desc': 'エコシステムのニーズ、市場状況、KPIパフォーマンスに基づいて資金戦略が進化。',
+                'oset.title': 'オープンソース＆エコシステムツールDAO',
+                'oset.intro': 'カルダノのエコシステムを支える重要なインフラ、SDK、開発者ツールに資金を提供し維持します。',
+                'oset.card1.title': 'メンテナンスと持続可能性',
+                'oset.card1.desc': '長期的なメンテナンスと更新が必要な重要なオープンソースプロジェクトに継続的な資金を提供。',
+                'oset.card2.title': '新しいツール開発',
+                'oset.card2.desc': 'カルダノの開発者機能を拡張する新しいSDK、ライブラリ、ツールの開発に資金を提供。',
+                'oset.card3.title': 'ドメイン固有のKPI',
+                'oset.card3.desc': 'ライブラリの使用指標、リポジトリ活動、ビルダーによる採用、開発者エコシステムの成長を追跡。',
+                'oset.card4.title': '開発者フライホイール',
+                'oset.card4.desc': 'より良いツール → より多くのビルダー → より多くのdApp → より強いエコシステム → より良いKPI指標。',
+                'marketing.title': 'マーケティングDAO',
+                'marketing.intro': 'カルダノエコシステムの認知度、ユーザー獲得、測定可能な成長を推進します。',
+                'marketing.card1.title': '認知度キャンペーン',
+                'marketing.card1.desc': '主要市場とコミュニティにおけるカルダノの可視性を高めるためのターゲットマーケティングキャンペーンに資金を提供。',
+                'marketing.card2.title': 'ユーザー獲得',
+                'marketing.card2.desc': 'カルダノdAppとエコシステムプロジェクトに新しいユーザーを呼び込むイニシアチブを支援。',
+                'marketing.card3.title': 'イベント＆カンファレンス',
+                'marketing.card3.desc': 'エコシステムを結集し、新しい参加者を引き付ける主要イベントを組織・スポンサー。',
+                'marketing.card4.title': '測定可能な成長',
+                'marketing.card4.desc': 'インパクトと説明責任を示すため、MAU成長、ユーザーエンゲージメント指標、市場認知度を追跡。',
+                'footer.title': '国庫は戦略的資本配分者として機能すべきです',
+                'footer.desc': 'イニシアチブDAOは、専門チームがそれぞれのドメインで資本配分を管理し、透明なKPI説明責任と民主的監督を備えた新しいガバナンスモデルです。',
+                'footer.cta': 'フレームワークを探索',
+            },
+            es: {
+                'nav.framework': 'Marco',
+                'nav.pilot': 'Estructura Piloto',
+                'nav.governance': 'Gobernanza',
+                'nav.drep': 'dRep DAO',
+                'nav.builder': 'Builder DAO',
+                'nav.opensource': 'OSET DAO',
+                'nav.marketing': 'Marketing DAO',
+                'hero.badge': 'Gobernanza Cardano',
+                'hero.title': 'Repensando la Asignación del Tesoro',
+                'hero.subtitle': 'Asignación estratégica de capital a través de DAOs de Iniciativa especializados, donde los fondos del tesoro fluyen hacia constructores, infraestructura e iniciativas de crecimiento con responsabilidad transparente de KPIs.',
+                'hero.scroll': 'Desplázate para explorar',
+                'framework.title': 'El Marco',
+                'framework.intro': 'Los DAOs de Iniciativa representan compartimentos estratégicos de capital dentro del Tesoro de Cardano, cada uno con experiencia especializada y mecanismos de responsabilidad de KPIs.',
+                'framework.step1.title': 'El Tesoro Asigna',
+                'framework.step1.desc': 'Los dReps aprueban financiación sectorial para los DAOs de Iniciativa',
+                'framework.step2.title': 'Los DAOs Despliegan Capital',
+                'framework.step2.desc': 'Expertos del dominio financian las iniciativas de mayor impacto',
+                'framework.step3.title': 'Responsabilidad de KPIs',
+                'framework.step3.desc': 'Medir resultados, ajustar asignaciones, repetir',
+                'framework.cycle.label': 'Continuo',
+                'framework.cycle.text': 'Ciclo de Capital',
+                'framework.cycle.repeat': '\u21B4 El ciclo se repite \u2014 el capital se capitaliza',
+                'kpi.mau': 'MAU',
+                'kpi.tvl': 'TVL',
+                'kpi.txn': 'Transacciones',
+                'kpi.mau.label': 'Usuarios Activos Mensuales',
+                'kpi.tvl.label': 'Valor Total Bloqueado',
+                'kpi.txn.label': 'Actividad On-Chain',
+                'framework.card1.title': 'Flujo de Gobernanza',
+                'framework.card1.desc': 'La asignación del tesoro fluye a través de Intersect hacia DAOs especializados, gobernados por representantes electos y sujetos a supervisión del dRep DAO.',
+                'framework.card2.title': 'Experiencia de Dominio',
+                'framework.card2.desc': 'Cada DAO de Iniciativa se enfoca en un dominio específico: financiación de constructores, herramientas de código abierto o marketing del ecosistema.',
+                'framework.card3.title': 'Responsabilidad On-Chain',
+                'framework.card3.desc': 'Contratos inteligentes ejecutan decisiones de gobernanza y aseguran transparencia en todos los movimientos del tesoro y reportes de KPIs.',
+                'pilot.title': 'Estructura Piloto 2026',
+                'pilot.intro': 'Tres DAOs de Iniciativa, una capa de gobernanza y una cadena clara de responsabilidad del tesoro al impacto del ecosistema.',
+                'pilot.legend.fund': 'Flujo de Fondos',
+                'pilot.legend.governance': 'Supervisión de Gobernanza',
+                'pilot.legend.kpi': 'Reporte de KPIs',
+                'governance.title': 'Gobernanza y Membresía',
+                'governance.intro': 'Quién Gobierna. Quién Entra. Cómo Funciona.',
+                'governance.council.title': 'Modelo de Consejo de 7 Asientos',
+                'governance.council.desc1': '<strong>3 asientos</strong> elegidos por representantes del dRep DAO + <strong>4 asientos</strong> elegidos por miembros del DAO de Iniciativa = <strong>consejo de gobernanza de 7 personas</strong>',
+                'governance.council.desc2': 'Tanto los miembros del DAO de Iniciativa como del dRep DAO pueden nominar candidatos. Los miembros del consejo son individuos, no entidades, asegurando responsabilidad directa.',
+                'governance.membership.title': 'Criterios de Membresía por DAO',
+                'governance.builder.title': 'Builder DAO',
+                'governance.builder.desc': 'Financia dApps activas y aplicaciones del ecosistema',
+                'governance.builder.li1': 'Producto activo en Cardano',
+                'governance.builder.li2': 'Produce KPI central (MAU, TVL o transacciones)',
+                'governance.builder.li3': 'KYB/KYC verificado',
+                'governance.builder.li4': 'Membresía basada en entidades',
+                'governance.oset.title': 'OSET DAO',
+                'governance.oset.desc': 'Mantiene infraestructura y herramientas',
+                'governance.oset.li1': 'Bibliotecas/SDKs de código abierto',
+                'governance.oset.li2': 'Exploradores de bloques, indexadores',
+                'governance.oset.li3': 'Proyectos de infraestructura central',
+                'governance.oset.li4': 'KYB/KYC verificado',
+                'governance.marketing.title': 'Marketing DAO',
+                'governance.marketing.desc': 'Impulsa crecimiento y conciencia',
+                'governance.marketing.li1': 'Historial de marketing del ecosistema',
+                'governance.marketing.li2': 'Eventos, contenido, adquisición de usuarios',
+                'governance.marketing.li3': 'Impacto medido en conciencia',
+                'governance.marketing.li4': 'KYB/KYC verificado',
+                'governance.principles.title': 'Principios Fundamentales de Diseño',
+                'governance.p1.title': 'Experiencia de Dominio',
+                'governance.p1.desc': 'Votación informada por miembros con conocimiento profundo del dominio.',
+                'governance.p2.title': 'Entidades, No Individuos',
+                'governance.p2.desc': 'Membresía vinculada a organizaciones/proyectos, no a individuos, para estabilidad.',
+                'governance.p3.title': 'KYB/KYC Verificado',
+                'governance.p3.desc': 'Todos los miembros se someten a verificación para prevenir actores maliciosos.',
+                'governance.p4.title': 'Membresía Evolutiva',
+                'governance.p4.desc': 'Nuevos constructores, proyectos de herramientas y organizaciones de marketing pueden unirse al cumplir los criterios.',
+                'drep.title': 'dRep DAO',
+                'drep.intro': 'La capa de coordinación de gobernanza que establece estándares, define KPIs y asegura responsabilidad en todos los DAOs de Iniciativa.',
+                'drep.card1.title': 'Estándares de Gobernanza',
+                'drep.card1.desc': 'El dRep DAO establece estándares básicos de gobernanza y mejores prácticas que todos los DAOs de Iniciativa siguen.',
+                'drep.card2.title': 'Definición de KPIs',
+                'drep.card2.desc': 'Establece y evoluciona requisitos de KPI (MAU, TVL, transacciones) alineados con las prioridades del Tesoro.',
+                'drep.card3.title': 'Elecciones del Consejo',
+                'drep.card3.desc': 'Elige 3 de los 7 asientos del consejo, representando los intereses de la comunidad dRep.',
+                'drep.card4.title': 'Voto de No Confianza',
+                'drep.card4.desc': 'Puede iniciar votaciones para remover miembros del consejo o DAOs con bajo rendimiento.',
+                'builder.title': 'Builder DAO',
+                'builder.intro': 'Financia dApps activas y aplicaciones del ecosistema que impulsan la adopción y creación de valor medible de Cardano.',
+                'builder.track.title': 'Historial de Impacto',
+                'builder.stat1.value': '~12M ADA',
+                'builder.stat1.label': 'Distribuidos',
+                'builder.stat2.value': '34',
+                'builder.stat2.label': 'Constructores Financiados',
+                'builder.stat3.value': '100%',
+                'builder.stat3.label': 'Seguimiento de KPIs',
+                'builder.feat1.title': 'Capital Distribuido',
+                'builder.feat1.desc': 'Aproximadamente 12 millones de ADA distribuidos a 34 constructores del ecosistema durante el último año.',
+                'builder.feat2.title': 'Transparencia de KPIs',
+                'builder.feat2.desc': 'Todos los constructores financiados han rastreado y reportado sus KPIs durante todo el período de financiación.',
+                'builder.feat3.title': 'Transparencia Total',
+                'builder.feat3.desc': 'Todas las decisiones, votos y flujos de fondos son públicamente visibles. Sin asignaciones ocultas.',
+                'builder.feat4.title': 'Votación Democrática',
+                'builder.feat4.desc': 'Modelo de gobernanza de un miembro, un voto asegurando representación justa.',
+                'builder.feat5.title': 'Tesoro de Contratos Inteligentes',
+                'builder.feat5.desc': 'Fondos del tesoro gobernados por contratos inteligentes que requieren aprobación colectiva.',
+                'builder.feat6.title': 'Gobernanza Multipartita',
+                'builder.feat6.desc': 'Ninguna entidad controla el acceso al tesoro\u2014gobernanza multipartita on-chain.',
+                'builder.features.title': 'Características del Builder DAO',
+                'builder.card1.title': 'Enfoque de Dominio',
+                'builder.card1.desc': 'Experiencia especializada en evaluar productos de constructores y su impacto en el ecosistema.',
+                'builder.card2.title': 'Membresía Basada en Entidades',
+                'builder.card2.desc': 'Membresía vinculada a organizaciones y productos activos, no individuos.',
+                'builder.card3.title': 'Consejo de 7 Miembros',
+                'builder.card3.desc': '4 asientos elegidos por miembros del Builder DAO, 3 del dRep DAO.',
+                'builder.card4.title': 'Estrategia Dinámica',
+                'builder.card4.desc': 'Las estrategias de financiación evolucionan según las necesidades del ecosistema y el rendimiento de KPIs.',
+                'oset.title': 'DAO de Código Abierto y Herramientas del Ecosistema',
+                'oset.intro': 'Financia y mantiene la infraestructura crítica, SDKs y herramientas de desarrollo que impulsan el ecosistema de Cardano.',
+                'oset.card1.title': 'Mantenimiento y Sostenibilidad',
+                'oset.card1.desc': 'Financiación continua para proyectos críticos de código abierto que requieren mantenimiento a largo plazo.',
+                'oset.card2.title': 'Desarrollo de Nuevas Herramientas',
+                'oset.card2.desc': 'Financia el desarrollo de nuevos SDKs, bibliotecas y herramientas que expanden las capacidades de los desarrolladores.',
+                'oset.card3.title': 'KPIs Específicos del Dominio',
+                'oset.card3.desc': 'Rastrea métricas de uso de bibliotecas, actividad del repositorio y crecimiento del ecosistema de desarrolladores.',
+                'oset.card4.title': 'El Efecto Volante del Desarrollador',
+                'oset.card4.desc': 'Mejores herramientas \u2192 Más constructores \u2192 Más dApps \u2192 Ecosistema más fuerte \u2192 Mejores métricas.',
+                'marketing.title': 'Marketing DAO',
+                'marketing.intro': 'Impulsa la conciencia, adquisición de usuarios y crecimiento medible para el ecosistema de Cardano.',
+                'marketing.card1.title': 'Campañas de Conciencia',
+                'marketing.card1.desc': 'Financia campañas de marketing dirigidas para aumentar la visibilidad de Cardano.',
+                'marketing.card2.title': 'Adquisición de Usuarios',
+                'marketing.card2.desc': 'Apoya iniciativas que traen nuevos usuarios a las dApps y proyectos del ecosistema de Cardano.',
+                'marketing.card3.title': 'Eventos y Conferencias',
+                'marketing.card3.desc': 'Organiza y patrocina eventos importantes que unen al ecosistema y atraen nuevos participantes.',
+                'marketing.card4.title': 'Crecimiento Medible',
+                'marketing.card4.desc': 'Rastrea crecimiento de MAU, métricas de engagement y conciencia de mercado.',
+                'footer.title': 'El Tesoro Debería Funcionar Como un Asignador Estratégico de Capital',
+                'footer.desc': 'Los DAOs de Iniciativa representan un nuevo modelo de gobernanza con asignación de capital especializada y responsabilidad democrática.',
+                'footer.cta': 'Explorar el Marco',
+            },
+            pt: {
+                'nav.framework': 'Estrutura',
+                'nav.pilot': 'Estrutura Piloto',
+                'nav.governance': 'Governança',
+                'nav.drep': 'dRep DAO',
+                'nav.builder': 'Builder DAO',
+                'nav.opensource': 'OSET DAO',
+                'nav.marketing': 'Marketing DAO',
+                'hero.badge': 'Governança Cardano',
+                'hero.title': 'Repensando a Alocação do Tesouro',
+                'hero.subtitle': 'Alocação estratégica de capital através de DAOs de Iniciativa especializados, onde os fundos do tesouro fluem para construtores, infraestrutura e iniciativas de crescimento com responsabilidade transparente de KPIs.',
+                'hero.scroll': 'Role para explorar',
+                'framework.title': 'A Estrutura',
+                'framework.intro': 'Os DAOs de Iniciativa representam compartimentos estratégicos de capital dentro do Tesouro da Cardano, cada um com expertise especializada e mecanismos de responsabilidade de KPIs.',
+                'framework.step1.title': 'Tesouro Aloca',
+                'framework.step1.desc': 'dReps aprovam financiamento setorial para os DAOs de Iniciativa',
+                'framework.step2.title': 'DAOs Implantam Capital',
+                'framework.step2.desc': 'Especialistas do domínio financiam as iniciativas de maior impacto',
+                'framework.step3.title': 'Responsabilidade de KPIs',
+                'framework.step3.desc': 'Medir resultados, ajustar alocações, repetir',
+                'framework.cycle.label': 'Contínuo',
+                'framework.cycle.text': 'Ciclo de Capital',
+                'framework.cycle.repeat': '\u21B4 O ciclo se repete \u2014 o capital se capitaliza',
+                'kpi.mau': 'MAU',
+                'kpi.tvl': 'TVL',
+                'kpi.txn': 'Transações',
+                'kpi.mau.label': 'Usuários Ativos Mensais',
+                'kpi.tvl.label': 'Valor Total Bloqueado',
+                'kpi.txn.label': 'Atividade On-Chain',
+                'framework.card1.title': 'Fluxo de Governança',
+                'framework.card1.desc': 'A alocação do tesouro flui através da Intersect para DAOs especializados, governados por representantes eleitos e sujeitos à supervisão do dRep DAO.',
+                'framework.card2.title': 'Expertise de Domínio',
+                'framework.card2.desc': 'Cada DAO de Iniciativa foca em um domínio específico: financiamento de construtores, ferramentas de código aberto ou marketing do ecossistema.',
+                'framework.card3.title': 'Responsabilidade On-Chain',
+                'framework.card3.desc': 'Contratos inteligentes executam decisões de governança e garantem transparência em todos os movimentos do tesouro e relatórios de KPIs.',
+                'pilot.title': 'Estrutura Piloto 2026',
+                'pilot.intro': 'Três DAOs de Iniciativa, uma camada de governança e uma cadeia clara de responsabilidade do tesouro ao impacto do ecossistema.',
+                'pilot.legend.fund': 'Fluxo de Fundos',
+                'pilot.legend.governance': 'Supervisão de Governança',
+                'pilot.legend.kpi': 'Relatório de KPIs',
+                'governance.title': 'Governança e Associação',
+                'governance.intro': 'Quem Governa. Quem Entra. Como Funciona.',
+                'governance.council.title': 'Modelo de Conselho de 7 Assentos',
+                'governance.council.desc1': '<strong>3 assentos</strong> eleitos por representantes do dRep DAO + <strong>4 assentos</strong> eleitos por membros do DAO de Iniciativa = <strong>conselho de governança de 7 pessoas</strong>',
+                'governance.council.desc2': 'Membros do DAO de Iniciativa e do dRep DAO podem nomear candidatos. Os membros do conselho são indivíduos, não entidades.',
+                'governance.membership.title': 'Critérios de Associação por DAO',
+                'governance.builder.title': 'Builder DAO',
+                'governance.builder.desc': 'Financia dApps ativos e aplicações do ecossistema',
+                'governance.builder.li1': 'Produto ativo na Cardano',
+                'governance.builder.li2': 'Produz KPI central (MAU, TVL ou transações)',
+                'governance.builder.li3': 'KYB/KYC verificado',
+                'governance.builder.li4': 'Associação baseada em entidades',
+                'governance.oset.title': 'OSET DAO',
+                'governance.oset.desc': 'Mantém infraestrutura e ferramentas',
+                'governance.oset.li1': 'Bibliotecas/SDKs de código aberto',
+                'governance.oset.li2': 'Exploradores de blocos, indexadores',
+                'governance.oset.li3': 'Projetos de infraestrutura central',
+                'governance.oset.li4': 'KYB/KYC verificado',
+                'governance.marketing.title': 'Marketing DAO',
+                'governance.marketing.desc': 'Impulsiona crescimento e conscientização',
+                'governance.marketing.li1': 'Histórico de marketing do ecossistema',
+                'governance.marketing.li2': 'Eventos, conteúdo, aquisição de usuários',
+                'governance.marketing.li3': 'Impacto mensurável na conscientização',
+                'governance.marketing.li4': 'KYB/KYC verificado',
+                'governance.principles.title': 'Princípios Fundamentais de Design',
+                'governance.p1.title': 'Expertise de Domínio',
+                'governance.p1.desc': 'Votação informada por membros com conhecimento profundo do domínio.',
+                'governance.p2.title': 'Entidades, Não Indivíduos',
+                'governance.p2.desc': 'Associação vinculada a organizações/projetos, não indivíduos, para estabilidade.',
+                'governance.p3.title': 'KYB/KYC Verificado',
+                'governance.p3.desc': 'Todos os membros passam por verificação para prevenir agentes maliciosos.',
+                'governance.p4.title': 'Associação Evolutiva',
+                'governance.p4.desc': 'Novos construtores e organizações podem se juntar ao atender aos critérios.',
+                'drep.title': 'dRep DAO',
+                'drep.intro': 'A camada de coordenação de governança que estabelece padrões, define KPIs e garante responsabilidade em todos os DAOs de Iniciativa.',
+                'drep.card1.title': 'Padrões de Governança',
+                'drep.card1.desc': 'O dRep DAO estabelece padrões básicos de governança e melhores práticas.',
+                'drep.card2.title': 'Definição de KPIs',
+                'drep.card2.desc': 'Define e evolui requisitos de KPI alinhados com as prioridades do Tesouro.',
+                'drep.card3.title': 'Eleições do Conselho',
+                'drep.card3.desc': 'Elege 3 dos 7 assentos do conselho, representando os interesses da comunidade dRep.',
+                'drep.card4.title': 'Voto de Desconfiança',
+                'drep.card4.desc': 'Pode iniciar votações para remover membros do conselho ou DAOs com baixo desempenho.',
+                'builder.title': 'Builder DAO',
+                'builder.intro': 'Financia dApps ativos que impulsionam a adoção mensurável da Cardano e criação de valor.',
+                'builder.track.title': 'Histórico de Impacto',
+                'builder.stat1.value': '~12M ADA',
+                'builder.stat1.label': 'Distribuídos',
+                'builder.stat2.value': '34',
+                'builder.stat2.label': 'Construtores Financiados',
+                'builder.stat3.value': '100%',
+                'builder.stat3.label': 'Rastreamento de KPIs',
+                'builder.feat1.title': 'Capital Distribuído',
+                'builder.feat1.desc': 'Aproximadamente 12 milhões de ADA distribuídos a 34 construtores do ecossistema no último ano.',
+                'builder.feat2.title': 'Transparência de KPIs',
+                'builder.feat2.desc': 'Todos os construtores financiados rastrearam e reportaram seus KPIs com total visibilidade.',
+                'builder.feat3.title': 'Transparência Total',
+                'builder.feat3.desc': 'Todas as decisões, votos e fluxos de fundos são publicamente visíveis.',
+                'builder.feat4.title': 'Votação Democrática',
+                'builder.feat4.desc': 'Modelo de governança um membro, um voto garantindo representação justa.',
+                'builder.feat5.title': 'Tesouro de Contratos Inteligentes',
+                'builder.feat5.desc': 'Fundos do tesouro governados por contratos inteligentes que exigem aprovação coletiva.',
+                'builder.feat6.title': 'Governança Multipartidária',
+                'builder.feat6.desc': 'Nenhuma entidade controla o acesso ao tesouro\u2014governança multipartidária on-chain.',
+                'builder.features.title': 'Recursos do Builder DAO',
+                'builder.card1.title': 'Foco de Domínio',
+                'builder.card1.desc': 'Expertise especializada na avaliação de produtos e impacto no ecossistema.',
+                'builder.card2.title': 'Associação Baseada em Entidades',
+                'builder.card2.desc': 'Associação vinculada a organizações e produtos ativos, não indivíduos.',
+                'builder.card3.title': 'Conselho de 7 Membros',
+                'builder.card3.desc': '4 assentos eleitos por membros do Builder DAO, 3 do dRep DAO.',
+                'builder.card4.title': 'Estratégia Dinâmica',
+                'builder.card4.desc': 'Estratégias de financiamento evoluem com base nas necessidades do ecossistema.',
+                'oset.title': 'DAO de Código Aberto e Ferramentas do Ecossistema',
+                'oset.intro': 'Financia e mantém a infraestrutura crítica, SDKs e ferramentas de desenvolvimento do ecossistema Cardano.',
+                'oset.card1.title': 'Manutenção e Sustentabilidade',
+                'oset.card1.desc': 'Financiamento contínuo para projetos críticos de código aberto.',
+                'oset.card2.title': 'Desenvolvimento de Novas Ferramentas',
+                'oset.card2.desc': 'Financia novos SDKs, bibliotecas e ferramentas que expandem as capacidades dos desenvolvedores.',
+                'oset.card3.title': 'KPIs Específicos do Domínio',
+                'oset.card3.desc': 'Rastreia métricas de uso, atividade do repositório e crescimento do ecossistema de desenvolvedores.',
+                'oset.card4.title': 'O Efeito Volante do Desenvolvedor',
+                'oset.card4.desc': 'Melhores ferramentas \u2192 Mais construtores \u2192 Mais dApps \u2192 Ecossistema mais forte \u2192 Melhores métricas.',
+                'marketing.title': 'Marketing DAO',
+                'marketing.intro': 'Impulsiona conscientização, aquisição de usuários e crescimento mensurável para o ecossistema Cardano.',
+                'marketing.card1.title': 'Campanhas de Conscientização',
+                'marketing.card1.desc': 'Financia campanhas de marketing direcionadas para aumentar a visibilidade da Cardano.',
+                'marketing.card2.title': 'Aquisição de Usuários',
+                'marketing.card2.desc': 'Apoia iniciativas que trazem novos usuários para dApps e projetos do ecossistema.',
+                'marketing.card3.title': 'Eventos e Conferências',
+                'marketing.card3.desc': 'Organiza e patrocina eventos importantes que unem o ecossistema.',
+                'marketing.card4.title': 'Crescimento Mensurável',
+                'marketing.card4.desc': 'Rastreia crescimento de MAU, métricas de engajamento e conscientização de mercado.',
+                'footer.title': 'O Tesouro Deveria Funcionar Como um Alocador Estratégico de Capital',
+                'footer.desc': 'Os DAOs de Iniciativa representam um novo modelo de governança com alocação especializada de capital e supervisão democrática.',
+                'footer.cta': 'Explorar a Estrutura',
+            },
+            fr: {
+                'nav.framework': 'Cadre',
+                'nav.pilot': 'Structure Pilote',
+                'nav.governance': 'Gouvernance',
+                'nav.drep': 'dRep DAO',
+                'nav.builder': 'Builder DAO',
+                'nav.opensource': 'OSET DAO',
+                'nav.marketing': 'Marketing DAO',
+                'hero.badge': 'Gouvernance Cardano',
+                'hero.title': 'Repenser l\'Allocation du Trésor',
+                'hero.subtitle': 'Allocation stratégique du capital via des DAOs d\'Initiative spécialisés, où les fonds du trésor sont dirigés vers les constructeurs, l\'infrastructure et les initiatives de croissance avec une responsabilité transparente des KPIs.',
+                'hero.scroll': 'Défiler pour explorer',
+                'framework.title': 'Le Cadre',
+                'framework.intro': 'Les DAOs d\'Initiative représentent des compartiments stratégiques de capital au sein du Trésor de Cardano, chacun avec une expertise spécialisée et des mécanismes de responsabilité des KPIs.',
+                'framework.step1.title': 'Le Trésor Alloue',
+                'framework.step1.desc': 'Les dReps approuvent le financement sectoriel pour les DAOs d\'Initiative',
+                'framework.step2.title': 'Les DAOs Déploient le Capital',
+                'framework.step2.desc': 'Les experts du domaine financent les initiatives à plus fort impact',
+                'framework.step3.title': 'Responsabilité des KPIs',
+                'framework.step3.desc': 'Mesurer les résultats, ajuster les allocations, répéter',
+                'framework.cycle.label': 'Continu',
+                'framework.cycle.text': 'Cycle de Capital',
+                'framework.cycle.repeat': '\u21B4 Le cycle se répète \u2014 le capital se compose',
+                'kpi.mau': 'MAU',
+                'kpi.tvl': 'TVL',
+                'kpi.txn': 'Transactions',
+                'kpi.mau.label': 'Utilisateurs Actifs Mensuels',
+                'kpi.tvl.label': 'Valeur Totale Verrouillée',
+                'kpi.txn.label': 'Activité On-Chain',
+                'framework.card1.title': 'Flux de Gouvernance',
+                'framework.card1.desc': 'L\'allocation du trésor passe par Intersect vers des DAOs spécialisés, gouvernés par des représentants élus et supervisés par le dRep DAO.',
+                'framework.card2.title': 'Expertise du Domaine',
+                'framework.card2.desc': 'Chaque DAO d\'Initiative se concentre sur un domaine spécifique: financement des constructeurs, outils open source ou marketing de l\'écosystème.',
+                'framework.card3.title': 'Responsabilité On-Chain',
+                'framework.card3.desc': 'Les contrats intelligents exécutent les décisions de gouvernance et assurent la transparence.',
+                'pilot.title': 'Structure Pilote 2026',
+                'pilot.intro': 'Trois DAOs d\'Initiative, une couche de gouvernance et une chaîne claire de responsabilité du trésor à l\'impact de l\'écosystème.',
+                'pilot.legend.fund': 'Flux de Fonds',
+                'pilot.legend.governance': 'Supervision de Gouvernance',
+                'pilot.legend.kpi': 'Rapports de KPIs',
+                'governance.title': 'Gouvernance et Adhésion',
+                'governance.intro': 'Qui Gouverne. Qui entre. Comment ça fonctionne.',
+                'governance.council.title': 'Modèle de Conseil à 7 Sièges',
+                'governance.council.desc1': '<strong>3 sièges</strong> élus par les représentants du dRep DAO + <strong>4 sièges</strong> élus par les membres du DAO d\'Initiative = <strong>conseil de gouvernance de 7 personnes</strong>',
+                'governance.council.desc2': 'Les membres du DAO d\'Initiative et du dRep DAO peuvent nommer des candidats. Les membres du conseil sont des individus, pas des entités.',
+                'governance.membership.title': 'Critères d\'Adhésion par DAO',
+                'governance.builder.title': 'Builder DAO',
+                'governance.builder.desc': 'Finance les dApps actives et les applications de l\'écosystème',
+                'governance.builder.li1': 'Produit actif sur Cardano',
+                'governance.builder.li2': 'Produit un KPI central (MAU, TVL ou transactions)',
+                'governance.builder.li3': 'KYB/KYC vérifié',
+                'governance.builder.li4': 'Adhésion basée sur les entités',
+                'governance.oset.title': 'OSET DAO',
+                'governance.oset.desc': 'Maintient l\'infrastructure et les outils',
+                'governance.oset.li1': 'Bibliothèques/SDKs open source',
+                'governance.oset.li2': 'Explorateurs de blocs, indexeurs',
+                'governance.oset.li3': 'Projets d\'infrastructure centrale',
+                'governance.oset.li4': 'KYB/KYC vérifié',
+                'governance.marketing.title': 'Marketing DAO',
+                'governance.marketing.desc': 'Stimule la croissance et la notoriété',
+                'governance.marketing.li1': 'Bilan en marketing de l\'écosystème',
+                'governance.marketing.li2': 'Événements, contenu, acquisition d\'utilisateurs',
+                'governance.marketing.li3': 'Impact mesuré sur la notoriété',
+                'governance.marketing.li4': 'KYB/KYC vérifié',
+                'governance.principles.title': 'Principes Fondamentaux de Conception',
+                'governance.p1.title': 'Expertise du Domaine',
+                'governance.p1.desc': 'Vote éclairé par des membres avec une connaissance approfondie du domaine.',
+                'governance.p2.title': 'Entités, Pas Individus',
+                'governance.p2.desc': 'Adhésion liée aux organisations/projets, pas aux individus, pour la stabilité.',
+                'governance.p3.title': 'KYB/KYC Vérifié',
+                'governance.p3.desc': 'Tous les membres subissent une vérification pour prévenir les acteurs malveillants.',
+                'governance.p4.title': 'Adhésion Évolutive',
+                'governance.p4.desc': 'De nouveaux constructeurs et organisations peuvent se joindre en remplissant les critères.',
+                'drep.title': 'dRep DAO',
+                'drep.intro': 'La couche de coordination de gouvernance qui établit les normes, définit les KPIs et assure la responsabilité dans tous les DAOs d\'Initiative.',
+                'drep.card1.title': 'Normes de Gouvernance',
+                'drep.card1.desc': 'Le dRep DAO établit les normes de base de gouvernance et les meilleures pratiques.',
+                'drep.card2.title': 'Définition des KPIs',
+                'drep.card2.desc': 'Définit et fait évoluer les exigences de KPI alignées sur les priorités du Trésor.',
+                'drep.card3.title': 'Élections du Conseil',
+                'drep.card3.desc': 'Élit 3 des 7 sièges du conseil, représentant les intérêts de la communauté dRep.',
+                'drep.card4.title': 'Vote de Défiance',
+                'drep.card4.desc': 'Peut initier des votes pour retirer des membres du conseil ou des DAOs sous-performants.',
+                'builder.title': 'Builder DAO',
+                'builder.intro': 'Finance les dApps actives qui stimulent l\'adoption mesurable de Cardano et la création de valeur.',
+                'builder.track.title': 'Bilan d\'Impact',
+                'builder.stat1.value': '~12M ADA',
+                'builder.stat1.label': 'Distribués',
+                'builder.stat2.value': '34',
+                'builder.stat2.label': 'Constructeurs Financés',
+                'builder.stat3.value': '100%',
+                'builder.stat3.label': 'Suivi des KPIs',
+                'builder.feat1.title': 'Capital Distribué',
+                'builder.feat1.desc': 'Environ 12 millions d\'ADA distribués à 34 constructeurs de l\'écosystème au cours de l\'année passée.',
+                'builder.feat2.title': 'Transparence des KPIs',
+                'builder.feat2.desc': 'Tous les constructeurs financés ont suivi et rapporté leurs KPIs avec une visibilité complète.',
+                'builder.feat3.title': 'Transparence Totale',
+                'builder.feat3.desc': 'Toutes les décisions, votes et flux de fonds sont publiquement visibles.',
+                'builder.feat4.title': 'Vote Démocratique',
+                'builder.feat4.desc': 'Modèle de gouvernance un membre, un vote assurant une représentation équitable.',
+                'builder.feat5.title': 'Trésor en Contrats Intelligents',
+                'builder.feat5.desc': 'Fonds du trésor gouvernés par des contrats intelligents nécessitant l\'approbation collective.',
+                'builder.feat6.title': 'Gouvernance Multipartite',
+                'builder.feat6.desc': 'Aucune entité ne contrôle l\'accès au trésor\u2014gouvernance multipartite on-chain.',
+                'builder.features.title': 'Fonctionnalités du Builder DAO',
+                'builder.card1.title': 'Focus du Domaine',
+                'builder.card1.desc': 'Expertise spécialisée dans l\'évaluation des produits et leur impact sur l\'écosystème.',
+                'builder.card2.title': 'Adhésion Basée sur les Entités',
+                'builder.card2.desc': 'Adhésion liée aux organisations et produits actifs, pas aux individus.',
+                'builder.card3.title': 'Conseil de 7 Membres',
+                'builder.card3.desc': '4 sièges élus par les membres du Builder DAO, 3 du dRep DAO.',
+                'builder.card4.title': 'Stratégie Dynamique',
+                'builder.card4.desc': 'Les stratégies de financement évoluent selon les besoins de l\'écosystème et les performances KPI.',
+                'oset.title': 'DAO Open Source et Outils de l\'Écosystème',
+                'oset.intro': 'Finance et maintient l\'infrastructure critique, les SDKs et les outils de développement de l\'écosystème Cardano.',
+                'oset.card1.title': 'Maintenance et Durabilité',
+                'oset.card1.desc': 'Financement continu pour les projets open source critiques nécessitant une maintenance à long terme.',
+                'oset.card2.title': 'Développement de Nouveaux Outils',
+                'oset.card2.desc': 'Finance le développement de nouveaux SDKs, bibliothèques et outils.',
+                'oset.card3.title': 'KPIs Spécifiques au Domaine',
+                'oset.card3.desc': 'Suit les métriques d\'utilisation, l\'activité des dépôts et la croissance de l\'écosystème développeur.',
+                'oset.card4.title': 'L\'Effet Volant du Développeur',
+                'oset.card4.desc': 'Meilleurs outils \u2192 Plus de constructeurs \u2192 Plus de dApps \u2192 Écosystème plus fort \u2192 Meilleures métriques.',
+                'marketing.title': 'Marketing DAO',
+                'marketing.intro': 'Stimule la notoriété, l\'acquisition d\'utilisateurs et la croissance mesurable de l\'écosystème Cardano.',
+                'marketing.card1.title': 'Campagnes de Notoriété',
+                'marketing.card1.desc': 'Finance des campagnes marketing ciblées pour augmenter la visibilité de Cardano.',
+                'marketing.card2.title': 'Acquisition d\'Utilisateurs',
+                'marketing.card2.desc': 'Soutient les initiatives qui amènent de nouveaux utilisateurs vers les dApps Cardano.',
+                'marketing.card3.title': 'Événements et Conférences',
+                'marketing.card3.desc': 'Organise et sponsorise des événements majeurs qui rassemblent l\'écosystème.',
+                'marketing.card4.title': 'Croissance Mesurable',
+                'marketing.card4.desc': 'Suit la croissance des MAU, les métriques d\'engagement et la notoriété du marché.',
+                'footer.title': 'Le Trésor Devrait Fonctionner Comme un Allocateur Stratégique de Capital',
+                'footer.desc': 'Les DAOs d\'Initiative représentent un nouveau modèle de gouvernance avec une allocation spécialisée du capital et une supervision démocratique.',
+                'footer.cta': 'Explorer le Cadre',
+            }
+        };
+
+        const langFlags = { en: '\uD83C\uDDEC\uD83C\uDDE7', ja: '\uD83C\uDDEF\uD83C\uDDF5', es: '\uD83C\uDDEA\uD83C\uDDF8', pt: '\uD83C\uDDE7\uD83C\uDDF7', fr: '\uD83C\uDDEB\uD83C\uDDF7' };
+        const langCodes = { en: 'EN', ja: 'JA', es: 'ES', pt: 'PT', fr: 'FR' };
+        let currentLang = localStorage.getItem('lang') || 'en';
+
+        const langSelector = document.getElementById('langSelector');
+        const langBtn = document.getElementById('langBtn');
+        langBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            langSelector.classList.toggle('open');
+        });
+        document.addEventListener('click', () => langSelector.classList.remove('open'));
+
+        function applyLanguage(lang) {
+            currentLang = lang;
+            const t = translations[lang];
+            if (!t) return;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key] !== undefined) {
+                    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                        el.placeholder = t[key];
+                    } else if (key.includes('.desc1') || key.includes('.desc2')) {
+                        el.innerHTML = t[key];
+                    } else {
+                        el.textContent = t[key];
+                    }
+                }
+            });
+            langBtn.querySelector('.lang-current-flag').innerHTML = langFlags[lang];
+            langBtn.querySelector('.lang-current-code').textContent = langCodes[lang];
+            document.querySelectorAll('.lang-option').forEach(opt => {
+                opt.classList.toggle('active', opt.dataset.lang === lang);
+            });
+            localStorage.setItem('lang', lang);
+            langSelector.classList.remove('open');
+        }
+
+        document.querySelectorAll('.lang-option').forEach(opt => {
+            opt.addEventListener('click', (e) => {
+                e.stopPropagation();
+                applyLanguage(opt.dataset.lang);
+            });
+        });
+
+        if (currentLang !== 'en') applyLanguage(currentLang);
+    </script>
+</body>
+</html>
